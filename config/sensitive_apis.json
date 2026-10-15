@@ -1,0 +1,128 @@
+{
+  "sms": {
+    "tier": 3,
+    "apis": [
+      "Landroid/telephony/SmsManager;->sendTextMessage",
+      "Landroid/telephony/SmsManager;->sendMultipartTextMessage",
+      "Landroid/telephony/SmsManager;->sendDataMessage",
+      "Landroid/content/ContentResolver;->query(Landroid/net/Uri;->content://sms"
+    ]
+  },
+  "telephony": {
+    "tier": 3,
+    "apis": [
+      "Landroid/telephony/TelephonyManager;->getDeviceId",
+      "Landroid/telephony/TelephonyManager;->getSubscriberId",
+      "Landroid/telephony/TelephonyManager;->getLine1Number",
+      "Landroid/telephony/TelephonyManager;->getSimSerialNumber",
+      "Landroid/telephony/TelephonyManager;->getNetworkOperator"
+    ]
+  },
+  "device_info": {
+    "tier": 2,
+    "apis": [
+      "Landroid/os/Build;->SERIAL",
+      "Landroid/os/Build;->MODEL",
+      "Landroid/os/Build;->MANUFACTURER",
+      "Landroid/provider/Settings$Secure;->getString(->android_id",
+      "Landroid/net/wifi/WifiInfo;->getMacAddress"
+    ]
+  },
+  "contacts": {
+    "tier": 2,
+    "apis": [
+      "Landroid/content/ContentResolver;->query(Landroid/net/Uri;->content://contacts",
+      "Landroid/content/ContentResolver;->query(Landroid/net/Uri;->content://com.android.contacts"
+    ]
+  },
+  "camera": {
+    "tier": 2,
+    "apis": [
+      "Landroid/hardware/Camera;->open",
+      "Landroid/hardware/camera2/CameraManager;->openCamera",
+      "Landroid/media/MediaRecorder;->setVideoSource"
+    ]
+  },
+  "location": {
+    "tier": 2,
+    "apis": [
+      "Landroid/location/LocationManager;->getLastKnownLocation",
+      "Landroid/location/LocationManager;->requestLocationUpdates"
+    ]
+  },
+  "network": {
+    "tier": 2,
+    "apis": [
+      "Ljava/net/HttpURLConnection;->connect",
+      "Ljava/net/URL;->openConnection",
+      "Lokhttp3/OkHttpClient;->newCall",
+      "Lokhttp3/Request$Builder;->url",
+      "Lorg/apache/http/client/HttpClient;->execute"
+    ]
+  },
+  "reflection": {
+    "tier": 3,
+    "apis": [
+      "Ljava/lang/reflect/Method;->invoke",
+      "Ljava/lang/Class;->forName",
+      "Ljava/lang/Class;->getMethod",
+      "Ljava/lang/Class;->getDeclaredMethod"
+    ]
+  },
+  "dynamic_loading": {
+    "tier": 3,
+    "apis": [
+      "Ldalvik/system/DexClassLoader;-><init>",
+      "Ldalvik/system/PathClassLoader;-><init>",
+      "Ljava/lang/ClassLoader;->loadClass",
+      "Landroid/app/DexClassLoader;-><init>"
+    ]
+  },
+  "file_io": {
+    "tier": 1,
+    "apis": [
+      "Ljava/io/FileOutputStream;-><init>",
+      "Ljava/io/FileInputStream;-><init>",
+      "Landroid/content/Context;->openFileOutput",
+      "Landroid/os/Environment;->getExternalStorageDirectory"
+    ]
+  },
+  "process": {
+    "tier": 3,
+    "apis": [
+      "Ljava/lang/Runtime;->exec",
+      "Ljava/lang/ProcessBuilder;->start"
+    ]
+  },
+  "accessibility": {
+    "tier": 3,
+    "apis": [
+      "Landroid/accessibilityservice/AccessibilityService;->onAccessibilityEvent",
+      "Landroid/accessibilityservice/AccessibilityService;->performGlobalAction",
+      "Landroid/view/accessibility/AccessibilityNodeInfo;->performAction"
+    ]
+  },
+  "overlay": {
+    "tier": 3,
+    "apis": [
+      "Landroid/view/WindowManager;->addView",
+      "Landroid/view/WindowManager$LayoutParams;->TYPE_APPLICATION_OVERLAY",
+      "Landroid/view/WindowManager$LayoutParams;->TYPE_SYSTEM_ALERT"
+    ]
+  },
+  "package_install": {
+    "tier": 3,
+    "apis": [
+      "Landroid/content/Intent;->ACTION_INSTALL_PACKAGE",
+      "Landroid/content/pm/PackageInstaller;->createSession"
+    ]
+  },
+  "keylogging": {
+    "tier": 3,
+    "apis": [
+      "Landroid/view/View;->setOnKeyListener",
+      "Landroid/text/TextWatcher;->onTextChanged",
+      "Landroid/view/inputmethod/InputMethodManager;->showSoftInput"
+    ]
+  }
+}
