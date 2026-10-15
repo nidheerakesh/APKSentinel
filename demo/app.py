@@ -10,7 +10,6 @@ import tempfile
 from pathlib import Path
 
 import streamlit as st
-import plotly.graph_objects as go
 import torch
 import torch.nn.functional as F
 
@@ -23,278 +22,267 @@ from explain.explainer import explain_prediction, ExplanationResult
 from explain.attribution import attribute_to_agents, generate_explanation_text, AgentAttribution
 from config.settings import MODEL_DIR, EVIDENCE_DIR, GRAPHS_DIR, ExplainConfig
 
+# ---------------------------------------------------------------------------
+# Design tokens / CSS -- SOC forensics dashboard (Stitch design)
+# ---------------------------------------------------------------------------
+
 SOC_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 :root {
-    --bg: #0b1326;
-    --surface: #0F172A;
-    --surface-high: #1E293B;
-    --surface-highest: #2d3449;
-    --border: rgba(51,65,85,0.45);
+    --canvas: #0B1326;
+    --surface-1: #0F172A;
+    --surface-2: #1E293B;
+    --border: #334155;
+    --accent: #06B6D4;
+    --threat: #EF4444;
+    --safe: #10B981;
+    --warning: #F59E0B;
     --text-primary: #F8FAFC;
     --text-muted: #94A3B8;
-    --cyan: #06B6D4;
-    --cyan-light: #4CD7F6;
-    --red: #EF4444;
-    --amber: #F59E0B;
-    --green: #10B981;
 }
 
-.stApp {
-    background-color: var(--bg) !important;
-}
-
+.stApp { background-color: var(--canvas) !important; }
 .stApp header { background-color: rgba(11,19,38,0.85) !important; backdrop-filter: blur(12px); }
+section[data-testid="stSidebar"] { background-color: #0A0F20 !important; border-right: 1px solid var(--border); }
 
-section[data-testid="stSidebar"] { background-color: #131b2e !important; }
+h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif !important; color: var(--text-primary) !important; letter-spacing: -0.01em; }
+p, span, label, div { font-family: 'Inter', sans-serif; }
 
-h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; color: var(--text-primary) !important; letter-spacing: -0.01em; }
-p, span, label, div { font-family: 'Space Grotesk', sans-serif; }
-
-.soc-header {
-    background: linear-gradient(135deg, var(--surface) 0%, rgba(6,182,212,0.05) 100%);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    vertical-align: middle;
+    font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20;
 }
-.soc-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 28px;
+
+/* --- Label caps (section labels) --- */
+.label-caps {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
     font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-    margin: 0;
-}
-.soc-subtitle {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--cyan);
-    margin-top: 4px;
+    color: var(--text-muted);
 }
-.soc-status-bar {
+.mono { font-family: 'JetBrains Mono', monospace !important; }
+.mono-sm { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.text-cyan { color: var(--accent) !important; }
+.text-red { color: var(--threat) !important; }
+.text-amber { color: var(--warning) !important; }
+.text-green { color: var(--safe) !important; }
+
+/* --- App chrome header --- */
+.app-topbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 12px;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
 }
-.soc-status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
+.app-topbar-left { display: flex; align-items: center; gap: 10px; }
+.app-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+.version-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.35);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+.pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--safe);
     animation: pulse-dot 2s infinite;
+    display: inline-block;
 }
 @keyframes pulse-dot {
     0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
     50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(16,185,129,0); }
 }
-.soc-status-text {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+.engine-status {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-muted);
 }
 
-.soc-card {
-    background: var(--surface);
+/* --- Telemetry breadcrumb bar --- */
+.telemetry-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(15,23,42,0.6);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 1rem;
+    margin-bottom: 18px;
+}
+.telemetry-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+}
+.telemetry-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+}
+.telemetry-pill.good { color: var(--safe); border-color: rgba(16,185,129,0.3); }
+
+/* --- Page title block --- */
+.page-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+}
+.page-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    color: var(--text-muted);
+    max-width: 760px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* --- Cards --- */
+.soc-card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
     margin-bottom: 0.75rem;
 }
 .soc-card-glow-red {
-    background: var(--surface);
+    background: var(--surface-1);
     border: 1px solid rgba(239,68,68,0.35);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 10px;
+    padding: 16px;
     margin-bottom: 0.75rem;
-    box-shadow: 0 0 16px rgba(239,68,68,0.15);
+    box-shadow: 0 0 20px rgba(239,68,68,0.15);
 }
 .soc-card-glow-cyan {
-    background: var(--surface);
-    border: 1px solid rgba(6,182,212,0.25);
-    border-radius: 8px;
-    padding: 1rem;
+    background: var(--surface-1);
+    border: 1px solid rgba(6,182,212,0.3);
+    border-radius: 10px;
+    padding: 16px;
     margin-bottom: 0.75rem;
-    box-shadow: 0 0 12px rgba(6,182,212,0.12);
+    box-shadow: 0 0 16px rgba(6,182,212,0.14);
 }
 .soc-card-glow-green {
-    background: var(--surface);
+    background: var(--surface-1);
     border: 1px solid rgba(16,185,129,0.35);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 10px;
+    padding: 16px;
     margin-bottom: 0.75rem;
-    box-shadow: 0 0 12px rgba(16,185,129,0.12);
+    box-shadow: 0 0 16px rgba(16,185,129,0.14);
 }
 
-.soc-score-badge {
+/* --- Severity badges --- */
+.sev-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    width: 80px; height: 80px;
-    border-radius: 12px;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 4px;
 }
-.soc-score-badge.critical {
-    background: rgba(239,68,68,0.15);
-    box-shadow: 0 0 24px rgba(239,68,68,0.4);
-}
-.soc-score-badge.warning {
-    background: rgba(245,158,11,0.15);
-    box-shadow: 0 0 24px rgba(245,158,11,0.3);
-}
-.soc-score-badge.nominal {
-    background: rgba(16,185,129,0.15);
-    box-shadow: 0 0 24px rgba(16,185,129,0.3);
-}
-.soc-score-num {
-    font-size: 28px; font-weight: 700; line-height: 1;
-}
-.soc-score-label {
-    font-family: 'Fira Code', monospace;
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    margin-top: 4px; opacity: 0.8;
-}
+.sev-critical { background: rgba(239,68,68,0.14); border: 1px solid rgba(239,68,68,0.4); color: var(--threat); }
+.sev-high { background: rgba(245,158,11,0.14); border: 1px solid rgba(245,158,11,0.4); color: var(--warning); }
+.sev-medium { background: rgba(148,163,184,0.14); border: 1px solid rgba(148,163,184,0.35); color: var(--text-muted); }
+.sev-safe { background: rgba(16,185,129,0.14); border: 1px solid rgba(16,185,129,0.4); color: var(--safe); }
+.sev-info { background: rgba(6,182,212,0.14); border: 1px solid rgba(6,182,212,0.4); color: var(--accent); }
 
-.chip-critical {
-    display: inline-block;
-    background: rgba(239,68,68,0.12);
-    border: 1px solid rgba(239,68,68,0.35);
-    color: #EF4444;
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 4px;
-}
-.chip-warning {
-    display: inline-block;
-    background: rgba(245,158,11,0.12);
-    border: 1px solid rgba(245,158,11,0.35);
-    color: #F59E0B;
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 4px;
-}
-.chip-nominal {
-    display: inline-block;
-    background: rgba(16,185,129,0.12);
-    border: 1px solid rgba(16,185,129,0.35);
-    color: #10B981;
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 4px;
-}
-.chip-cyan {
-    display: inline-block;
-    background: rgba(6,182,212,0.12);
-    border: 1px solid rgba(6,182,212,0.35);
-    color: #06B6D4;
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 4px;
-}
-
-.soc-metric-row {
-    display: flex;
-    gap: 12px;
-    margin: 8px 0;
-}
+/* --- Metrics --- */
+.soc-metric-row { display: flex; gap: 12px; margin: 8px 0; flex-wrap: wrap; }
 .soc-metric {
-    background: var(--surface);
+    background: var(--surface-1);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 12px 16px;
     flex: 1;
     text-align: center;
 }
-.soc-metric-value {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 22px; font-weight: 700;
-    color: var(--text-primary);
-}
-.soc-metric-label {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-muted);
-    margin-top: 4px;
-}
+.soc-metric-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.soc-metric-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
 
-.mono { font-family: 'Fira Code', monospace !important; }
-.mono-sm { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--text-muted); }
-.label-caps {
-    font-family: 'Fira Code', monospace;
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-muted);
-}
-.text-cyan { color: var(--cyan) !important; }
-.text-red { color: var(--red) !important; }
-.text-amber { color: var(--amber) !important; }
-.text-green { color: var(--green) !important; }
-
+/* --- Evidence rows --- */
 .evidence-item {
-    background: var(--surface);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
     border-left: 3px solid var(--border);
-    padding: 8px 12px;
-    margin: 4px 0;
-    border-radius: 0 4px 4px 0;
+    padding: 10px 14px;
+    margin: 6px 0;
+    border-radius: 0 6px 6px 0;
     font-size: 13px;
 }
-.evidence-item.high { border-left-color: var(--red); }
-.evidence-item.med { border-left-color: var(--amber); }
-.evidence-item.low { border-left-color: var(--cyan); }
+.evidence-item.high { border-left-color: var(--threat); }
+.evidence-item.med { border-left-color: var(--warning); }
+.evidence-item.low { border-left-color: var(--accent); }
 
-.agent-contrib-bar {
-    height: 6px;
-    border-radius: 3px;
-    margin-top: 4px;
-}
-
+/* --- Tabs --- */
 div[data-testid="stTabs"] button[data-baseweb="tab"] {
-    font-family: 'Fira Code', monospace !important;
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 11px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     letter-spacing: 0.06em !important;
     text-transform: uppercase !important;
     color: var(--text-muted) !important;
 }
 div[data-testid="stTabs"] button[aria-selected="true"] {
-    color: var(--cyan) !important;
-    border-bottom-color: var(--cyan) !important;
+    color: var(--accent) !important;
+    border-bottom-color: var(--accent) !important;
 }
 
 div[data-testid="stExpander"] {
-    background: var(--surface) !important;
+    background: var(--surface-1) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
 }
 
 div[data-testid="stMetric"] {
-    background: var(--surface) !important;
+    background: var(--surface-1) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     padding: 12px !important;
 }
-div[data-testid="stMetric"] label { color: var(--text-muted) !important; font-family: 'Fira Code', monospace !important; font-size: 10px !important; letter-spacing: 0.06em !important; text-transform: uppercase !important; }
-div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color: var(--cyan) !important; font-family: 'Space Grotesk', sans-serif !important; }
+div[data-testid="stMetric"] label { color: var(--text-muted) !important; font-family: 'JetBrains Mono', monospace !important; font-size: 10px !important; letter-spacing: 0.06em !important; text-transform: uppercase !important; }
+div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color: var(--accent) !important; font-family: 'Plus Jakarta Sans', sans-serif !important; }
 
 table { border-collapse: collapse; width: 100%; }
 th {
-    font-family: 'Fira Code', monospace !important;
-    font-size: 10px !important; font-weight: 600 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important; font-weight: 700 !important;
     letter-spacing: 0.06em !important; text-transform: uppercase !important;
     color: var(--text-muted) !important;
     border-bottom: 1px solid var(--border) !important;
@@ -302,17 +290,53 @@ th {
     text-align: left !important;
 }
 td {
-    font-family: 'Fira Code', monospace !important;
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 12px !important;
     color: var(--text-primary) !important;
-    border-bottom: 1px solid rgba(51,65,85,0.2) !important;
-    padding: 6px 12px !important;
+    border-bottom: 1px solid rgba(51,65,85,0.3) !important;
+    padding: 7px 12px !important;
 }
 
 div[data-testid="stFileUploader"] {
-    background: var(--surface) !important;
-    border: 1px dashed rgba(6,182,212,0.3) !important;
-    border-radius: 8px !important;
+    background: var(--surface-1) !important;
+    border: 1px dashed rgba(6,182,212,0.35) !important;
+    border-radius: 10px !important;
+}
+
+/* --- Graph header bar --- */
+.graph-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+}
+.graph-legend { display: flex; gap: 16px; flex-wrap: wrap; }
+.graph-legend-item { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: var(--text-muted); text-transform: uppercase; }
+.graph-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+/* --- Footer bar --- */
+.footer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    margin-top: 28px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
 }
 </style>
 """
@@ -358,7 +382,8 @@ def ensemble_predict(model, data):
     return float(gbm.predict_proba(features.reshape(1, -1))[0, 1])
 
 
-def create_risk_gauge(score: float) -> go.Figure:
+def create_risk_gauge(score: float) -> str:
+    """Return an inline SVG radial gauge (no Plotly)."""
     if score < 0.3:
         color = "#10B981"
         label = "NOMINAL"
@@ -369,43 +394,44 @@ def create_risk_gauge(score: float) -> go.Figure:
         color = "#EF4444"
         label = "CRITICAL THREAT"
 
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=score * 100,
-        number={"font": {"size": 48, "color": color, "family": "Space Grotesk"}, "suffix": ""},
-        title={"text": f"<b>{label}</b>", "font": {"size": 14, "color": color, "family": "Fira Code"}},
-        gauge={
-            "axis": {
-                "range": [0, 100],
-                "tickwidth": 1,
-                "tickcolor": "#334155",
-                "dtick": 20,
-                "tickfont": {"color": "#94A3B8", "size": 10, "family": "Fira Code"},
-            },
-            "bar": {"color": color, "thickness": 0.8},
-            "bgcolor": "#1E293B",
-            "borderwidth": 1,
-            "bordercolor": "#334155",
-            "steps": [
-                {"range": [0, 30], "color": "rgba(16,185,129,0.08)"},
-                {"range": [30, 60], "color": "rgba(245,158,11,0.08)"},
-                {"range": [60, 100], "color": "rgba(239,68,68,0.08)"},
-            ],
-            "threshold": {
-                "line": {"color": color, "width": 3},
-                "thickness": 0.85,
-                "value": score * 100,
-            },
-        },
-    ))
-    fig.update_layout(
-        height=260,
-        margin=dict(l=30, r=30, t=30, b=10),
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font={"family": "Space Grotesk"},
-    )
-    return fig
+    pct = max(0.0, min(1.0, score))
+    radius = 80
+    cx, cy = 100, 100
+    circumference = 2 * 3.14159265 * radius
+    arc_fraction = 0.75  # 270-degree sweep
+    track_len = circumference * arc_fraction
+    fill_len = track_len * pct
+    start_angle = 135  # degrees, so sweep covers 270deg ending at 45deg
+
+    return f'''
+    <div style="display:flex; align-items:center; justify-content:center; background:transparent;">
+    <svg viewBox="0 0 200 200" width="240" height="240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <filter id="gauge-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <circle cx="{cx}" cy="{cy}" r="{radius}" fill="none" stroke="#1E293B" stroke-width="14"
+            stroke-dasharray="{track_len:.2f} {circumference:.2f}"
+            stroke-dashoffset="0"
+            transform="rotate({start_angle} {cx} {cy})"
+            stroke-linecap="round"/>
+        <circle cx="{cx}" cy="{cy}" r="{radius}" fill="none" stroke="{color}" stroke-width="14"
+            stroke-dasharray="{fill_len:.2f} {circumference:.2f}"
+            stroke-dashoffset="0"
+            transform="rotate({start_angle} {cx} {cy})"
+            stroke-linecap="round"
+            filter="url(#gauge-glow)"/>
+        <text x="{cx}" y="{cy - 6}" text-anchor="middle" fill="{color}" font-family="Plus Jakarta Sans" font-size="40" font-weight="700">{int(pct*100)}</text>
+        <text x="{cx}" y="{cy + 20}" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="10" letter-spacing="1">/ 100 RISK</text>
+        <text x="{cx}" y="{cy + 48}" text-anchor="middle" fill="{color}" font-family="JetBrains Mono" font-size="12" font-weight="700" letter-spacing="1.5">{label}</text>
+    </svg>
+    </div>
+    '''
 
 
 def create_graph_html(data, explanation: ExplanationResult | None = None) -> str:
@@ -495,46 +521,6 @@ def run_analysis(apk_path: str) -> tuple[AnalysisResult, object, ExplanationResu
     return result, data, explanation, attributions
 
 
-def render_threat_badge(score: float) -> str:
-    if score >= 0.6:
-        return '<span class="chip-critical">CRITICAL THREAT</span>'
-    elif score >= 0.3:
-        return '<span class="chip-warning">SUSPICIOUS</span>'
-    else:
-        return '<span class="chip-nominal">NOMINAL</span>'
-
-
-def render_score_badge(score: float) -> str:
-    val = int(score * 100)
-    if score >= 0.6:
-        cls = "critical"
-        col = "#EF4444"
-    elif score >= 0.3:
-        cls = "warning"
-        col = "#F59E0B"
-    else:
-        cls = "nominal"
-        col = "#10B981"
-    return f'''<div class="soc-score-badge {cls}">
-        <span class="soc-score-num" style="color:{col}">{val}</span>
-        <span class="soc-score-label" style="color:{col}">/100 RISK</span>
-    </div>'''
-
-
-AGENT_COLORS = {
-    "manifest": "#F59E0B",
-    "bytecode": "#38BDF8",
-    "network": "#10B981",
-    "crypto": "#F472B6",
-}
-AGENT_ICONS = {
-    "manifest": "description",
-    "bytecode": "code",
-    "network": "language",
-    "crypto": "lock",
-}
-
-
 @st.cache_data(show_spinner="Running GNNExplainer...")
 def load_preanalyzed(_sha):
     evidence_path = EVIDENCE_DIR / f"{_sha}.json"
@@ -558,33 +544,74 @@ def load_preanalyzed(_sha):
     return result, data, explanation, attributions
 
 
-def _svg_icon(name, color="#06B6D4", size=20):
-    icons = {
-        "shield": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-        "file": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-        "code": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-        "globe": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
-        "lock": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>',
-        "hub": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>',
-        "brain": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 015 5c0 1.5-.5 2.5-1.5 3.5L12 14l-3.5-3.5C7.5 9.5 7 8.5 7 7a5 5 0 015-5z"/><path d="M12 14v8"/><path d="M8 18h8"/></svg>',
-        "graph": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><line x1="7.5" y1="7.5" x2="10.5" y2="10.5"/><line x1="13.5" y1="10.5" x2="16.5" y2="7.5"/><line x1="7.5" y1="16.5" x2="10.5" y2="13.5"/><line x1="13.5" y1="13.5" x2="16.5" y2="16.5"/></svg>',
-        "eye": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
-        "target": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
-        "layers": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
-        "arrow": f'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
-        "package": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
-    }
-    return icons.get(name, "")
+# ---------------------------------------------------------------------------
+# Presentation helpers
+# ---------------------------------------------------------------------------
+
+AGENT_COLORS = {
+    "manifest": "#F59E0B",
+    "bytecode": "#38BDF8",
+    "network": "#10B981",
+    "crypto": "#F472B6",
+}
+AGENT_ICONS = {
+    "manifest": "description",
+    "bytecode": "code",
+    "network": "language",
+    "crypto": "lock",
+}
+
+
+def render_threat_badge(score: float) -> str:
+    if score >= 0.6:
+        return '<span class="sev-badge sev-critical">CRITICAL THREAT</span>'
+    elif score >= 0.3:
+        return '<span class="sev-badge sev-high">SUSPICIOUS</span>'
+    else:
+        return '<span class="sev-badge sev-safe">NOMINAL</span>'
+
+
+def severity_badge(level: str) -> str:
+    """level: critical | high | medium | safe | info"""
+    return f'<span class="sev-badge sev-{level}">{level.upper()}</span>'
+
+
+def _icon(name: str, size: int = 20) -> str:
+    return f'<span class="material-symbols-outlined" style="font-size:{size}px;">{name}</span>'
+
+
+def _topbar():
+    st.markdown(f'''
+    <div class="app-topbar">
+        <div class="app-topbar-left">
+            {_icon("shield_lock", 22)}
+            <span class="app-name">APKSentinel</span>
+            <span class="version-badge">v2.4-PROD</span>
+        </div>
+        <div class="engine-status">
+            <span class="pulse-dot"></span>
+            CORE ENGINES ONLINE
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+
+def _telemetry_bar():
+    st.markdown('''
+    <div class="telemetry-bar">
+        <span class="telemetry-path">SENTINEL::FORENSIC_TRIAGE / ANALYSIS_WORKSPACE</span>
+        <span class="telemetry-pill good">REAL-TIME TELEMETRY VECTORED</span>
+        <span class="telemetry-pill good">NEURAL ENGINE: ONLINE</span>
+        <span class="telemetry-pill">LATENCY: 42MS</span>
+    </div>
+    ''', unsafe_allow_html=True)
 
 
 def _pipeline_svg():
     return '''
+    <div style="background:#0b1326;">
     <svg viewBox="0 0 900 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:900px; display:block; margin:0 auto;">
         <defs>
-            <linearGradient id="glow-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:0.15"/>
-                <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:0"/>
-            </linearGradient>
             <filter id="node-glow">
                 <feGaussianBlur stdDeviation="3" result="blur"/>
                 <feComposite in="SourceGraphic" in2="blur" operator="over"/>
@@ -601,30 +628,32 @@ def _pipeline_svg():
         <polygon points="736,55 746,60 736,65" fill="#334155"/>
 
         <rect x="40" y="25" width="120" height="70" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
-        <text x="100" y="55" text-anchor="middle" fill="#F8FAFC" font-family="Space Grotesk" font-size="13" font-weight="600">APK Input</text>
-        <text x="100" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Android package</text>
+        <text x="100" y="55" text-anchor="middle" fill="#F8FAFC" font-family="Plus Jakarta Sans" font-size="13" font-weight="700">APK Input</text>
+        <text x="100" y="75" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="10">Android package</text>
 
         <rect x="236" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5" opacity="0.9"/>
-        <text x="286" y="55" text-anchor="middle" fill="#F59E0B" font-family="Space Grotesk" font-size="13" font-weight="600">4 Agents</text>
-        <text x="286" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Static analysis</text>
+        <text x="286" y="55" text-anchor="middle" fill="#F59E0B" font-family="Plus Jakarta Sans" font-size="13" font-weight="700">4 Agents</text>
+        <text x="286" y="75" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="10">Static analysis</text>
 
         <rect x="406" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.5" opacity="0.9"/>
-        <text x="456" y="55" text-anchor="middle" fill="#8B5CF6" font-family="Space Grotesk" font-size="13" font-weight="600">Graph</text>
-        <text x="456" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Behaviour net</text>
+        <text x="456" y="55" text-anchor="middle" fill="#8B5CF6" font-family="Plus Jakarta Sans" font-size="13" font-weight="700">Graph</text>
+        <text x="456" y="75" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="10">Behaviour net</text>
 
         <rect x="576" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#06B6D4" stroke-width="1.5" opacity="0.9"/>
-        <text x="626" y="55" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="13" font-weight="600">GAT</text>
-        <text x="626" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Classify</text>
+        <text x="626" y="55" text-anchor="middle" fill="#06B6D4" font-family="Plus Jakarta Sans" font-size="13" font-weight="700">GAT</text>
+        <text x="626" y="75" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="10">Classify</text>
 
         <rect x="746" y="25" width="120" height="70" rx="10" fill="#0F172A" stroke="#10B981" stroke-width="1.5" opacity="0.9"/>
-        <text x="806" y="55" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="13" font-weight="600">Explain</text>
-        <text x="806" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">XAI + MITRE</text>
+        <text x="806" y="55" text-anchor="middle" fill="#10B981" font-family="Plus Jakarta Sans" font-size="13" font-weight="700">Explain</text>
+        <text x="806" y="75" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="10">XAI + MITRE</text>
     </svg>
+    </div>
     '''
 
 
 def _coordinator_svg():
     return '''
+    <div style="background:#0b1326;">
     <svg viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:520px; display:block; margin:0 auto;">
         <defs>
             <filter id="c-glow">
@@ -639,50 +668,52 @@ def _coordinator_svg():
         <line x1="260" y1="80" x2="185" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
 
         <circle cx="260" cy="60" r="30" fill="#0F172A" stroke="#06B6D4" stroke-width="2" filter="url(#c-glow)"/>
-        <text x="260" y="56" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="10" font-weight="600">COORD</text>
-        <text x="260" y="70" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">dispatch</text>
+        <text x="260" y="56" text-anchor="middle" fill="#06B6D4" font-family="Plus Jakarta Sans" font-size="10" font-weight="700">COORD</text>
+        <text x="260" y="70" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">dispatch</text>
 
         <rect x="50" y="140" width="120" height="55" rx="8" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5"/>
-        <text x="110" y="163" text-anchor="middle" fill="#F59E0B" font-family="Space Grotesk" font-size="11" font-weight="600">Manifest</text>
-        <text x="110" y="180" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">permissions</text>
+        <text x="110" y="163" text-anchor="middle" fill="#F59E0B" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">Manifest</text>
+        <text x="110" y="180" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="9">permissions</text>
 
         <rect x="190" y="140" width="120" height="55" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
-        <text x="250" y="163" text-anchor="middle" fill="#38BDF8" font-family="Space Grotesk" font-size="11" font-weight="600">Bytecode</text>
-        <text x="250" y="180" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">call graph</text>
+        <text x="250" y="163" text-anchor="middle" fill="#38BDF8" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">Bytecode</text>
+        <text x="250" y="180" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="9">call graph</text>
 
         <rect x="50" y="210" width="120" height="55" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1.5"/>
-        <text x="110" y="233" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="11" font-weight="600">Network</text>
-        <text x="110" y="250" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">C2 detect</text>
+        <text x="110" y="233" text-anchor="middle" fill="#10B981" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">Network</text>
+        <text x="110" y="250" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="9">C2 detect</text>
 
         <rect x="190" y="210" width="120" height="55" rx="8" fill="#0F172A" stroke="#F472B6" stroke-width="1.5"/>
-        <text x="250" y="233" text-anchor="middle" fill="#F472B6" font-family="Space Grotesk" font-size="11" font-weight="600">Crypto</text>
-        <text x="250" y="250" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">weak algo</text>
+        <text x="250" y="233" text-anchor="middle" fill="#F472B6" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">Crypto</text>
+        <text x="250" y="250" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="9">weak algo</text>
 
         <line x1="260" y1="80" x2="110" y2="210" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
         <line x1="260" y1="80" x2="250" y2="210" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
 
         <rect x="360" y="155" width="140" height="110" rx="10" fill="rgba(6,182,212,0.05)" stroke="#1E293B" stroke-width="1"/>
-        <text x="430" y="178" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9" font-weight="500">EvidenceItem[]</text>
-        <text x="430" y="198" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.entity</text>
-        <text x="430" y="212" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.source_agent</text>
-        <text x="430" y="226" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.attributes</text>
-        <text x="430" y="240" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.confidence</text>
+        <text x="430" y="178" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="9" font-weight="700">EvidenceItem[]</text>
+        <text x="430" y="198" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="8">.entity</text>
+        <text x="430" y="212" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="8">.source_agent</text>
+        <text x="430" y="226" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="8">.attributes</text>
+        <text x="430" y="240" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="8">.confidence</text>
         <line x1="310" y1="195" x2="360" y2="210" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
 
-        <text x="260" y="300" text-anchor="middle" fill="#475569" font-family="Space Grotesk" font-size="11">Star topology  /  No inter-agent communication  /  Parallel dispatch</text>
+        <text x="260" y="300" text-anchor="middle" fill="#475569" font-family="Plus Jakarta Sans" font-size="11">Star topology  /  No inter-agent communication  /  Parallel dispatch</text>
     </svg>
+    </div>
     '''
 
 
 def _gat_svg():
     return '''
+    <div style="background:#0b1326;">
     <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:600px; display:block; margin:0 auto;">
-        <text x="20" y="20" fill="#475569" font-family="Fira Code" font-size="10">GAT Architecture</text>
+        <text x="20" y="20" fill="#475569" font-family="JetBrains Mono" font-size="10">GAT Architecture</text>
 
         <rect x="20" y="40" width="90" height="130" rx="6" fill="rgba(6,182,212,0.06)" stroke="#1E293B" stroke-width="1"/>
-        <text x="65" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Input</text>
-        <text x="65" y="78" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="11" font-weight="600">25-dim</text>
-        <text x="65" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">node feats</text>
+        <text x="65" y="60" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="9">Input</text>
+        <text x="65" y="78" text-anchor="middle" fill="#06B6D4" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">25-dim</text>
+        <text x="65" y="94" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">node feats</text>
         <circle cx="50" cy="120" r="4" fill="#38BDF8" opacity="0.6"/><circle cx="65" cy="115" r="4" fill="#F59E0B" opacity="0.6"/>
         <circle cx="80" cy="122" r="4" fill="#EF4444" opacity="0.6"/><circle cx="58" cy="135" r="4" fill="#10B981" opacity="0.6"/>
         <circle cx="73" cy="138" r="4" fill="#F472B6" opacity="0.6"/>
@@ -695,76 +726,77 @@ def _gat_svg():
         <polygon points="141,100 151,105 141,110" fill="#334155"/>
 
         <rect x="150" y="40" width="110" height="130" rx="6" fill="rgba(139,92,246,0.06)" stroke="#1E293B" stroke-width="1"/>
-        <text x="205" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Layer 1</text>
-        <text x="205" y="78" text-anchor="middle" fill="#8B5CF6" font-family="Space Grotesk" font-size="11" font-weight="600">GATConv</text>
-        <text x="205" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">25 -> 64</text>
-        <text x="205" y="110" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">4 heads</text>
-        <text x="205" y="126" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ BatchNorm</text>
-        <text x="205" y="142" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ ELU</text>
-        <text x="205" y="158" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ Dropout</text>
+        <text x="205" y="60" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="9">Layer 1</text>
+        <text x="205" y="78" text-anchor="middle" fill="#8B5CF6" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">GATConv</text>
+        <text x="205" y="94" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">25 -> 64</text>
+        <text x="205" y="110" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">4 heads</text>
+        <text x="205" y="126" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">+ BatchNorm</text>
+        <text x="205" y="142" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">+ ELU</text>
+        <text x="205" y="158" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">+ Dropout</text>
 
         <line x1="260" y1="105" x2="295" y2="105" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
         <polygon points="291,100 301,105 291,110" fill="#334155"/>
 
         <rect x="300" y="40" width="110" height="130" rx="6" fill="rgba(6,182,212,0.06)" stroke="#1E293B" stroke-width="1"/>
-        <text x="355" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Layer 2</text>
-        <text x="355" y="78" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="11" font-weight="600">GATConv</text>
-        <text x="355" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">256 -> 64</text>
-        <text x="355" y="110" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">1 head</text>
-        <text x="355" y="126" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ BatchNorm</text>
-        <text x="355" y="142" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ Readout</text>
-        <text x="355" y="158" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">mean+max</text>
+        <text x="355" y="60" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="9">Layer 2</text>
+        <text x="355" y="78" text-anchor="middle" fill="#06B6D4" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">GATConv</text>
+        <text x="355" y="94" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">256 -> 64</text>
+        <text x="355" y="110" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">1 head</text>
+        <text x="355" y="126" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">+ BatchNorm</text>
+        <text x="355" y="142" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">+ Readout</text>
+        <text x="355" y="158" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">mean+max</text>
 
         <line x1="410" y1="105" x2="445" y2="105" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
         <polygon points="441,100 451,105 441,110" fill="#334155"/>
 
         <rect x="450" y="55" width="130" height="100" rx="6" fill="rgba(16,185,129,0.06)" stroke="#1E293B" stroke-width="1"/>
-        <text x="515" y="75" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Classifier</text>
-        <text x="515" y="95" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">143 -> 64 -> 32 -> 2</text>
-        <text x="515" y="115" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="11" font-weight="600">Malware?</text>
-        <text x="515" y="135" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">36,258 params</text>
+        <text x="515" y="75" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono" font-size="9">Classifier</text>
+        <text x="515" y="95" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">143 -> 64 -> 32 -> 2</text>
+        <text x="515" y="115" text-anchor="middle" fill="#10B981" font-family="Plus Jakarta Sans" font-size="11" font-weight="700">Malware?</text>
+        <text x="515" y="135" text-anchor="middle" fill="#64748B" font-family="JetBrains Mono" font-size="8">36,258 params</text>
     </svg>
+    </div>
     '''
 
 
+def _footer_bar():
+    st.markdown('''
+    <div class="footer-bar">
+        <span class="material-symbols-outlined" style="font-size:14px;">cloud_sync</span>
+        IOC EXPORT STREAM: STIX 2.1 / MISP READY
+    </div>
+    ''', unsafe_allow_html=True)
+
+
 def render_landing():
-    # Hero
-    st.markdown(f'''
-    <div class="soc-header" style="text-align:center; padding:2.5rem 1.5rem; position:relative; overflow:hidden;">
-        <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 70%);"></div>
-        <div style="position:relative;">
-            <div style="display:inline-flex; align-items:center; gap:12px; margin-bottom:4px;">
-                {_svg_icon("shield", "#06B6D4", 32)}
-                <span class="soc-title" style="font-size:38px; letter-spacing:-0.03em;">APKSentinel</span>
-            </div>
-            <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; color:#64748B; margin-top:8px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.7; letter-spacing:0.01em;">
-                Automated multi-agent analysis and explainable risk scoring<br>of fraudulent Android banking applications
-            </div>
-            <div style="margin-top:16px;">
-                <span class="chip-cyan" style="font-size:9px; padding:3px 10px;">STATIC ANALYSIS</span>
-                <span class="chip-cyan" style="font-size:9px; padding:3px 10px; margin-left:4px;">GRAPH NEURAL NETWORK</span>
-                <span class="chip-cyan" style="font-size:9px; padding:3px 10px; margin-left:4px;">EXPLAINABLE AI</span>
-            </div>
-        </div>
+    _topbar()
+    _telemetry_bar()
+
+    st.markdown('''
+    <div class="page-title">Interactive Malware Analyzer &amp; Behavioral Telemetry</div>
+    <div class="page-subtitle">
+        Automated multi-agent static analysis, graph-attention classification, and explainable risk
+        scoring for fraudulent Android banking applications. Upload a sample or inspect a
+        pre-analyzed case from the forensic archive to begin.
     </div>
     ''', unsafe_allow_html=True)
 
     # Stats
     st.markdown('''
-    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:1.5rem 0;">
-        <div class="soc-metric" style="min-width:130px;">
+    <div class="soc-metric-row" style="justify-content:center;">
+        <div class="soc-metric" style="min-width:130px; flex:0 0 150px;">
             <div class="soc-metric-value" style="color:#06B6D4; font-size:26px;">94.05<span style="font-size:14px; opacity:0.7;">%</span></div>
             <div class="soc-metric-label">Accuracy</div>
         </div>
-        <div class="soc-metric" style="min-width:130px;">
+        <div class="soc-metric" style="min-width:130px; flex:0 0 150px;">
             <div class="soc-metric-value" style="color:#8B5CF6; font-size:26px;">0.958</div>
             <div class="soc-metric-label">F1 Score</div>
         </div>
-        <div class="soc-metric" style="min-width:130px;">
+        <div class="soc-metric" style="min-width:130px; flex:0 0 150px;">
             <div class="soc-metric-value" style="color:#10B981; font-size:26px;">98.3<span style="font-size:14px; opacity:0.7;">%</span></div>
             <div class="soc-metric-label">Recall</div>
         </div>
-        <div class="soc-metric" style="min-width:130px;">
+        <div class="soc-metric" style="min-width:130px; flex:0 0 150px;">
             <div class="soc-metric-value" style="color:#F59E0B; font-size:26px;">554</div>
             <div class="soc-metric-label">APKs Analyzed</div>
         </div>
@@ -772,22 +804,22 @@ def render_landing():
     ''', unsafe_allow_html=True)
 
     # Pipeline SVG
-    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">End-to-End Pipeline</div>', unsafe_allow_html=True)
-    st.markdown(_pipeline_svg(), unsafe_allow_html=True)
+    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center;">End-to-End Pipeline</div>', unsafe_allow_html=True)
+    st.components.v1.html(_pipeline_svg(), height=140, scrolling=False)
 
     st.markdown('<div style="height:24px;"></div>', unsafe_allow_html=True)
 
     # Agent Architecture SVG
-    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">Agent Architecture</div>', unsafe_allow_html=True)
+    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center;">Agent Architecture</div>', unsafe_allow_html=True)
 
     col_svg, col_cards = st.columns([1, 1])
 
     with col_svg:
-        st.markdown(_coordinator_svg(), unsafe_allow_html=True)
+        st.components.v1.html(_coordinator_svg(), height=340, scrolling=False)
 
     with col_cards:
         agents = [
-            ("Manifest Agent", "#F59E0B", "file", [
+            ("Manifest Agent", "#F59E0B", "description", [
                 "Parses AndroidManifest.xml",
                 "Extracts 30 dangerous permissions",
                 "Identifies exported components",
@@ -799,7 +831,7 @@ def render_landing():
                 "Flags ~150 sensitive API calls",
                 "Detects reflection and dynamic loading",
             ]),
-            ("Network Agent", "#10B981", "globe", [
+            ("Network Agent", "#10B981", "language", [
                 "Extracts URLs, IPs, domains",
                 "Decodes base64-encoded URLs",
                 "Detects C2 indicators",
@@ -821,16 +853,16 @@ def render_landing():
             st.markdown(f'''
             <div class="soc-card" style="border-left:3px solid {color}; margin-bottom:8px; padding:10px 14px;">
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    {_svg_icon(icon, color, 16)}
-                    <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:{color}; text-transform:uppercase; letter-spacing:0.06em;">{name}</span>
+                    <span class="material-symbols-outlined" style="color:{color}; font-size:16px;">{icon}</span>
+                    <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:{color}; text-transform:uppercase; letter-spacing:0.06em;">{name}</span>
                 </div>
                 {items_html}
             </div>
             ''', unsafe_allow_html=True)
 
     # GAT Architecture
-    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">GAT Architecture</div>', unsafe_allow_html=True)
-    st.markdown(_gat_svg(), unsafe_allow_html=True)
+    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center;">GAT Architecture</div>', unsafe_allow_html=True)
+    st.components.v1.html(_gat_svg(), height=220, scrolling=False)
 
     # Model comparison
     st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
@@ -840,22 +872,22 @@ def render_landing():
         st.markdown(f'''
         <div class="soc-card">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                {_svg_icon("graph", "#06B6D4", 18)}
-                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">GAT Only</span>
+                <span class="material-symbols-outlined" style="color:#06B6D4; font-size:18px;">hub</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">GAT Only</span>
             </div>
             <div style="font-size:13px; color:#64748B; line-height:1.6; margin-bottom:14px;">
                 2-layer Graph Attention Network with 4 heads. 36,258 parameters. Trained on CPU.
             </div>
             <div style="margin:6px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">85.71%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:700;">85.71%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:85.7%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">89.66%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:700;">89.66%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:89.7%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:600;">92.24%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:700;">92.24%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:92.2%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
             </div>
         </div>
@@ -865,42 +897,42 @@ def render_landing():
         st.markdown(f'''
         <div class="soc-card-glow-green">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                {_svg_icon("layers", "#10B981", 18)}
-                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Ensemble (GAT + GBM)</span>
-                <span class="chip-nominal" style="font-size:8px; padding:1px 6px; margin-left:auto;">BEST</span>
+                <span class="material-symbols-outlined" style="color:#10B981; font-size:18px;">layers</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Ensemble (GAT + GBM)</span>
+                <span class="sev-badge sev-safe" style="font-size:8px; padding:1px 6px; margin-left:auto;">BEST</span>
             </div>
             <div style="font-size:13px; color:#64748B; line-height:1.6; margin-bottom:14px;">
                 Gradient Boosting over 33 features: 15 graph-level + 18 structural + GAT probability.
             </div>
             <div style="margin:6px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">94.05%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:700;">94.05%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:94%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">95.80%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:700;">95.80%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95.8%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Recall</span><span style="color:#F8FAFC; font-weight:600;">98.28%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Recall</span><span style="color:#F8FAFC; font-weight:700;">98.28%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:98.3%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:600;">95.03%</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:700;">95.03%</span></div>
                 <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
         </div>
         ''', unsafe_allow_html=True)
 
     # Explainability
-    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">Explainability Layer</div>', unsafe_allow_html=True)
+    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center;">Explainability Layer</div>', unsafe_allow_html=True)
     col_xai, col_mitre = st.columns(2)
 
     with col_xai:
         st.markdown(f'''
         <div class="soc-card" style="border-left:3px solid #8B5CF6;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                {_svg_icon("eye", "#8B5CF6", 16)}
-                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#8B5CF6; text-transform:uppercase; letter-spacing:0.06em;">GNNExplainer</span>
+                <span class="material-symbols-outlined" style="color:#8B5CF6; font-size:16px;">visibility</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:#8B5CF6; text-transform:uppercase; letter-spacing:0.06em;">GNNExplainer</span>
             </div>
             <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
                 Generates node importance masks over the behaviour graph. Top-15 nodes form the explanation subgraph. Each node traces back to its source agent for attribution percentages.
@@ -912,11 +944,11 @@ def render_landing():
         st.markdown(f'''
         <div class="soc-card" style="border-left:3px solid #F59E0B;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                {_svg_icon("target", "#F59E0B", 16)}
-                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">MITRE ATT&CK Mapping</span>
+                <span class="material-symbols-outlined" style="color:#F59E0B; font-size:16px;">track_changes</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">MITRE ATT&amp;CK Mapping</span>
             </div>
             <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-                Maps 28 permissions and 29 API calls to ATT&CK for Mobile techniques and tactics. Based on Tanha & Kafaie (IEEE Access, 2025).
+                Maps 28 permissions and 29 API calls to ATT&amp;CK for Mobile techniques and tactics. Based on Tanha &amp; Kafaie (IEEE Access, 2025).
             </div>
         </div>
         ''', unsafe_allow_html=True)
@@ -924,20 +956,22 @@ def render_landing():
     # Reference
     st.markdown('''
     <div class="soc-card" style="margin-top:20px; text-align:center; border:1px solid rgba(6,182,212,0.15);">
-        <div class="label-caps" style="margin-bottom:6px; letter-spacing:0.12em;">Reference</div>
+        <div class="label-caps" style="margin-bottom:6px;">Reference</div>
         <div style="font-size:13px; color:#94A3B8; line-height:1.6;">
             M. Tanha and S. Kafaie, "A Review of Explainable AI for Android Malware Detection and Analysis,"<br>
             <span style="color:#06B6D4;">IEEE Access</span>, vol. 13, pp. 141958-141974, 2025
         </div>
-        <div style="font-family:'Fira Code',monospace; font-size:10px; color:#475569; margin-top:4px;">DOI: 10.1109/ACCESS.2025.3597575</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#475569; margin-top:4px;">DOI: 10.1109/ACCESS.2025.3597575</div>
     </div>
     ''', unsafe_allow_html=True)
+
+    _footer_bar()
 
 
 def main():
     st.set_page_config(
         page_title="APKSentinel // Threat Analysis",
-        page_icon="shield",
+        page_icon=":shield:",
         layout="wide",
     )
 
@@ -953,33 +987,39 @@ def main():
         render_landing()
         return
 
+    _topbar()
+    _telemetry_bar()
+
     st.markdown('''
-    <div class="soc-header">
-        <div class="soc-title">APKSentinel</div>
-        <div class="soc-subtitle">Multi-Agent Static Analysis &bull; Explainable GAT Classification</div>
-        <div class="soc-status-bar">
-            <div class="soc-status-dot"></div>
-            <span class="soc-status-text">ANALYSIS ENGINE ACTIVE &bull; 4 AGENTS ONLINE &bull; GAT MODEL LOADED</span>
-        </div>
+    <div class="page-title">Interactive Malware Analyzer &amp; Behavioral Telemetry</div>
+    <div class="page-subtitle">
+        Submit an APK for live multi-agent detonation, or load a case from the forensic archive
+        to inspect agent evidence, GAT risk scoring, and the GNNExplainer attention subgraph.
     </div>
     ''', unsafe_allow_html=True)
 
-    uploaded_file = st.file_uploader("Drop APK for analysis", type=["apk"])
+    col_upload, col_sample = st.columns([3, 2])
+    with col_upload:
+        st.markdown('<div class="label-caps" style="margin-bottom:6px;">Upload Sample</div>', unsafe_allow_html=True)
+        uploaded_file = st.file_uploader("Drop APK for analysis", type=["apk"], label_visibility="collapsed")
 
     pre_analyzed = None
-    evidence_dir = EVIDENCE_DIR
-    if evidence_dir.exists():
-        evidence_files = sorted(evidence_dir.glob("*.json"))
-        if evidence_files:
-            options = [f.stem for f in evidence_files]
-            demo_default = "0016B3D270A9C97E2A5DF8C7F063DABECB09BBF93BE090F9DE2BE65E91E178BE"
-            default_idx = options.index(demo_default) if demo_default in options else 0
-            selected = st.selectbox(
-                "Or select a pre-analyzed sample",
-                options,
-                index=default_idx,
-            )
-            pre_analyzed = selected
+    with col_sample:
+        st.markdown('<div class="label-caps" style="margin-bottom:6px;">Forensic Archive</div>', unsafe_allow_html=True)
+        evidence_dir = EVIDENCE_DIR
+        if evidence_dir.exists():
+            evidence_files = sorted(evidence_dir.glob("*.json"))
+            if evidence_files:
+                options = [f.stem for f in evidence_files]
+                demo_default = "0016B3D270A9C97E2A5DF8C7F063DABECB09BBF93BE090F9DE2BE65E91E178BE"
+                default_idx = options.index(demo_default) if demo_default in options else 0
+                selected = st.selectbox(
+                    "Or select a pre-analyzed sample",
+                    options,
+                    index=default_idx,
+                    label_visibility="collapsed",
+                )
+                pre_analyzed = selected
 
     result = data = explanation = attributions = None
 
@@ -995,211 +1035,259 @@ def main():
 
     if result and explanation:
         sha_display = pre_analyzed or result.sha256
-        st.markdown(f'''
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span class="label-caps text-cyan">SAMPLE</span>
-            <span class="mono-sm">{sha_display}</span>
-            <span style="margin-left:auto">{render_threat_badge(explanation.risk_score)}</span>
-        </div>
-        ''', unsafe_allow_html=True)
+        package_name = getattr(result, "package_name", None) or "unknown.package"
 
-        tab_verdict, tab_agents, tab_graph, tab_model = st.tabs(
-            ["Threat Verdict", "Agent Evidence", "Behaviour Graph", "Model Details"]
+        st.markdown('<div style="height:8px;"></div>', unsafe_allow_html=True)
+
+        # --- Threat verdict panel ---
+        glow_class = (
+            "soc-card-glow-red" if explanation.risk_score >= 0.6
+            else "soc-card-glow-cyan" if explanation.risk_score >= 0.3
+            else "soc-card-glow-green"
+        )
+        family_name = (
+            "Trojan Dropper" if explanation.risk_score >= 0.6
+            else "Anomalous Activity" if explanation.risk_score >= 0.3
+            else "Clean Binary"
         )
 
-        with tab_verdict:
-            col1, col2 = st.columns([2, 3])
+        st.markdown(f'<div class="{glow_class}">', unsafe_allow_html=True)
+        st.markdown('<div class="label-caps" style="margin-bottom:10px;">Threat Verdict</div>', unsafe_allow_html=True)
 
-            with col1:
-                st.markdown(f'''
-                <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px;">
-                    {render_score_badge(explanation.risk_score)}
-                    <div>
-                        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:#94A3B8;">Threat Classification</div>
-                        <div style="font-size:20px; font-weight:700; color:#F8FAFC; margin-top:2px;">
-                            {'Trojan Dropper' if explanation.risk_score >= 0.6 else 'Anomalous Activity' if explanation.risk_score >= 0.3 else 'Clean Binary'}
-                        </div>
-                        <div class="mono-sm" style="margin-top:4px;">
-                            Confidence: {explanation.confidence:.1%}
-                        </div>
-                    </div>
-                </div>
-                ''', unsafe_allow_html=True)
+        col_gauge, col_details = st.columns([1, 2])
 
-                st.plotly_chart(create_risk_gauge(explanation.risk_score), width="stretch")
+        with col_gauge:
+            st.components.v1.html(create_risk_gauge(explanation.risk_score), height=260)
 
-            with col2:
-                text = generate_explanation_text(explanation, attributions)
-                glow_class = "soc-card-glow-red" if explanation.risk_score >= 0.6 else "soc-card-glow-cyan" if explanation.risk_score >= 0.3 else "soc-card-glow-green"
-                st.markdown(f'<div class="{glow_class}">', unsafe_allow_html=True)
-                st.markdown(text)
-                st.markdown('</div>', unsafe_allow_html=True)
+        with col_details:
+            st.markdown(f'''
+            <div style="margin-bottom:10px;">
+                {render_threat_badge(explanation.risk_score)}
+                <span style="font-size:20px; font-weight:700; color:#F8FAFC; margin-left:10px;">{family_name}</span>
+            </div>
+            <table style="width:100%; margin-bottom:10px;">
+                <tr><td class="label-caps" style="width:35%;">Package Identifier</td><td class="mono" style="color:#F8FAFC;">{package_name}</td></tr>
+                <tr><td class="label-caps">SHA-256</td><td class="mono-sm">{sha_display}</td></tr>
+                <tr><td class="label-caps">Confidence</td><td class="mono" style="color:#06B6D4;">{explanation.confidence:.1%}</td></tr>
+                <tr><td class="label-caps">Risk Score</td><td class="mono" style="color:{'#EF4444' if explanation.risk_score >= 0.6 else '#F59E0B' if explanation.risk_score >= 0.3 else '#10B981'};">{explanation.risk_score:.4f}</td></tr>
+            </table>
+            ''', unsafe_allow_html=True)
 
-                if attributions:
-                    st.markdown('<div class="label-caps" style="margin:12px 0 6px 0;">Agent Attribution Breakdown</div>', unsafe_allow_html=True)
-                    for attr in attributions:
-                        color = AGENT_COLORS.get(attr.agent_name, "#94A3B8")
-                        st.markdown(f'''
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin:4px 0;">
-                            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:{color}; font-weight:600; text-transform:uppercase;">{attr.agent_name}</span>
-                            <span style="font-family:'Inter',sans-serif; font-size:18px; font-weight:700; color:{color};">{attr.contribution_pct}%</span>
-                        </div>
-                        <div style="background:rgba(51,65,85,0.3); height:4px; border-radius:2px; overflow:hidden;">
-                            <div style="width:{attr.contribution_pct}%; height:100%; background:{color}; border-radius:2px;"></div>
-                        </div>
-                        ''', unsafe_allow_html=True)
+            text = generate_explanation_text(explanation, attributions)
+            st.markdown(text)
 
-            st.markdown('<div class="label-caps" style="margin:16px 0 8px 0;">Top Risk Indicators</div>', unsafe_allow_html=True)
-            for name, imp in explanation.top_nodes[:10]:
-                short = name.split(";->")[-1] if ";->" in name else name.split(":")[-1]
-                bar_width = int(imp / (explanation.top_nodes[0][1] + 0.001) * 100)
-                severity = "high" if imp > 0.1 else "med" if imp > 0.05 else "low"
-                st.markdown(f'''
-                <div class="evidence-item {severity}">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="mono" style="font-size:12px; color:#F8FAFC;">{short}</span>
-                        <span class="mono" style="font-size:11px; color:#94A3B8;">{imp:.4f}</span>
-                    </div>
-                    <div style="background:rgba(51,65,85,0.3); height:3px; border-radius:2px; margin-top:4px; overflow:hidden;">
-                        <div style="width:{bar_width}%; height:100%; background:{'#EF4444' if severity=='high' else '#F59E0B' if severity=='med' else '#06B6D4'}; border-radius:2px;"></div>
-                    </div>
-                    <div class="mono-sm" style="margin-top:2px; font-size:10px;">{name}</div>
-                </div>
-                ''', unsafe_allow_html=True)
-
-            # MITRE ATT&CK Mapping (Tanha & Kafaie, IEEE Access 2025)
-            from explain.mitre_mapping import map_features_to_mitre, get_tactic_summary
-            mitre_maps = map_features_to_mitre(explanation.node_importances)
-            if mitre_maps:
-                tactic_summary = get_tactic_summary(mitre_maps)
-                st.markdown('<div class="label-caps" style="margin:16px 0 8px 0;">MITRE ATT&CK Mapping</div>', unsafe_allow_html=True)
-
-                tactic_colors = {
-                    "Collection": "#F59E0B", "Discovery": "#06B6D4", "Impact": "#EF4444",
-                    "Execution": "#DC2626", "Persistence": "#8B5CF6", "Command and Control": "#F97316",
-                    "Defense Evasion": "#10B981", "Privilege Escalation": "#EC4899",
-                    "Initial Access": "#F43F5E", "Credential Access": "#A855F7",
-                    "Exfiltration": "#E11D48", "Lateral Movement": "#6366F1",
-                }
-                for tactic, techniques in tactic_summary.items():
-                    color = tactic_colors.get(tactic, "#94A3B8")
-                    tech_html = " ".join(
-                        f'<span style="background:rgba(51,65,85,0.5); padding:2px 6px; border-radius:3px; font-size:10px; color:#CBD5E1;">{t}</span>'
-                        for t in techniques
-                    )
+            if attributions:
+                st.markdown('<div class="label-caps" style="margin:12px 0 6px 0;">Agent Attribution Breakdown</div>', unsafe_allow_html=True)
+                for attr in attributions:
+                    color = AGENT_COLORS.get(attr.agent_name, "#94A3B8")
                     st.markdown(f'''
-                    <div style="margin:6px 0; padding:8px 12px; background:rgba(15,23,42,0.6); border-left:3px solid {color}; border-radius:0 4px 4px 0;">
-                        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; color:{color}; text-transform:uppercase; letter-spacing:0.05em;">{tactic}</div>
-                        <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">{tech_html}</div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin:4px 0;">
+                        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:{color}; font-weight:700; text-transform:uppercase;">{attr.agent_name}</span>
+                        <span style="font-family:'Inter',sans-serif; font-size:18px; font-weight:700; color:{color};">{attr.contribution_pct}%</span>
+                    </div>
+                    <div style="background:rgba(51,65,85,0.3); height:4px; border-radius:2px; overflow:hidden;">
+                        <div style="width:{attr.contribution_pct}%; height:100%; background:{color}; border-radius:2px;"></div>
                     </div>
                     ''', unsafe_allow_html=True)
 
-        with tab_agents:
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # --- Top risk indicators ---
+        st.markdown('<div class="label-caps" style="margin:20px 0 8px 0;">Top Risk Indicators</div>', unsafe_allow_html=True)
+        for name, imp in explanation.top_nodes[:10]:
+            short = name.split(";->")[-1] if ";->" in name else name.split(":")[-1]
+            bar_width = int(imp / (explanation.top_nodes[0][1] + 0.001) * 100)
+            severity = "high" if imp > 0.1 else "med" if imp > 0.05 else "low"
+            badge_level = "critical" if severity == "high" else "high" if severity == "med" else "info"
             st.markdown(f'''
-            <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
-                <div class="soc-metric"><div class="soc-metric-value">{len(result.evidence)}</div><div class="soc-metric-label">Total Evidence</div></div>
-                <div class="soc-metric"><div class="soc-metric-value">{result.duration_seconds:.1f}s</div><div class="soc-metric-label">Analysis Time</div></div>
-                <div class="soc-metric"><div class="soc-metric-value">{len(result.agent_stats)}</div><div class="soc-metric-label">Agents Active</div></div>
-                <div class="soc-metric"><div class="soc-metric-value">{len(result.errors)}</div><div class="soc-metric-label">Errors</div></div>
+            <div class="evidence-item {severity}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>{severity_badge(badge_level)} <span class="mono" style="font-size:12px; color:#F8FAFC; margin-left:6px;">{short}</span></span>
+                    <span class="mono" style="font-size:11px; color:#94A3B8;">{imp:.4f}</span>
+                </div>
+                <div style="background:rgba(51,65,85,0.3); height:3px; border-radius:2px; margin-top:6px; overflow:hidden;">
+                    <div style="width:{bar_width}%; height:100%; background:{'#EF4444' if severity=='high' else '#F59E0B' if severity=='med' else '#06B6D4'}; border-radius:2px;"></div>
+                </div>
+                <div class="mono-sm" style="margin-top:4px; font-size:10px;">{name}</div>
             </div>
             ''', unsafe_allow_html=True)
 
-            if result.errors:
-                for err in result.errors:
-                    st.error(err)
+        # --- MITRE ATT&CK mapping ---
+        from explain.mitre_mapping import map_features_to_mitre, get_tactic_summary
+        mitre_maps = map_features_to_mitre(explanation.node_importances)
+        if mitre_maps:
+            tactic_summary = get_tactic_summary(mitre_maps)
+            st.markdown('<div class="label-caps" style="margin:20px 0 8px 0;">MITRE ATT&amp;CK Mapping</div>', unsafe_allow_html=True)
 
-            agent_groups: dict[str, list] = {}
-            for item in result.evidence:
-                agent_groups.setdefault(item.source_agent, []).append(item)
-
-            for agent_name, items in sorted(agent_groups.items()):
-                color = AGENT_COLORS.get(agent_name, "#94A3B8")
-                with st.expander(f"{agent_name.upper()} Agent -- {len(items)} findings", expanded=False):
-                    for item in items[:50]:
-                        risk = item.attributes.get("risk_level", item.attributes.get("sensitivity_tier", 0))
-                        if risk >= 3:
-                            severity = "high"
-                        elif risk >= 2:
-                            severity = "med"
-                        else:
-                            severity = "low"
-                        st.markdown(f'''
-                        <div class="evidence-item {severity}">
-                            <span class="chip-{'critical' if severity=='high' else 'warning' if severity=='med' else 'cyan'}">{item.evidence_type.value}</span>
-                            <span style="font-size:13px; color:#F8FAFC; margin-left:8px;">{item.description}</span>
-                        </div>
-                        ''', unsafe_allow_html=True)
-
-        with tab_graph:
-            st.markdown(f'''
-            <div style="display:flex; gap:24px; margin-bottom:12px;">
-                <span class="label-caps">Nodes: <span style="color:#F8FAFC; font-size:14px; font-weight:700;">{data.num_nodes}</span></span>
-                <span class="label-caps">Edges: <span style="color:#F8FAFC; font-size:14px; font-weight:700;">{data.edge_index.size(1)}</span></span>
-            </div>
-            ''', unsafe_allow_html=True)
-
-            show_explanation = st.checkbox("Highlight GNNExplainer subgraph", value=True)
-            graph_html = create_graph_html(
-                data, explanation if show_explanation else None
-            )
-            st.components.v1.html(graph_html, height=550, scrolling=True)
-
-            type_colors_legend = {
-                "Method": ("#38BDF8", "functions"),
-                "Class": ("#A78BFA", "school"),
-                "Permission": ("#F59E0B", "security"),
-                "API Call": ("#EF4444", "api"),
-                "Network": ("#10B981", "language"),
-                "Crypto": ("#F472B6", "lock"),
+            tactic_colors = {
+                "Collection": "#F59E0B", "Discovery": "#06B6D4", "Impact": "#EF4444",
+                "Execution": "#DC2626", "Persistence": "#8B5CF6", "Command and Control": "#F97316",
+                "Defense Evasion": "#10B981", "Privilege Escalation": "#EC4899",
+                "Initial Access": "#F43F5E", "Credential Access": "#A855F7",
+                "Exfiltration": "#E11D48", "Lateral Movement": "#6366F1",
             }
-            legend_html = '<div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:8px;">'
-            for name, (color, _) in type_colors_legend.items():
-                legend_html += f'<span style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:{color};display:inline-block;"></span><span class="label-caps">{name}</span></span>'
-            legend_html += '</div>'
-            st.markdown(legend_html, unsafe_allow_html=True)
+            for tactic, techniques in tactic_summary.items():
+                color = tactic_colors.get(tactic, "#94A3B8")
+                tech_html = " ".join(
+                    f'<span style="background:rgba(51,65,85,0.5); padding:2px 6px; border-radius:3px; font-size:10px; color:#CBD5E1;">{t}</span>'
+                    for t in techniques
+                )
+                st.markdown(f'''
+                <div style="margin:6px 0; padding:8px 12px; background:rgba(15,23,42,0.6); border-left:3px solid {color}; border-radius:0 4px 4px 0;">
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; color:{color}; text-transform:uppercase; letter-spacing:0.05em;">{tactic}</div>
+                    <div style="margin-top:4px; display:flex; flex-wrap:wrap; gap:4px;">{tech_html}</div>
+                </div>
+                ''', unsafe_allow_html=True)
 
-        with tab_model:
-            model = load_model()
-            total_params = sum(p.numel() for p in model.parameters())
+        # --- Agent evidence section (accordion) ---
+        st.markdown('<div class="label-caps" style="margin:24px 0 10px 0;">Agent Evidence</div>', unsafe_allow_html=True)
 
-            st.markdown(f'''
-            <div class="soc-card">
-                <div class="label-caps" style="margin-bottom:8px;">Architecture Specification</div>
-                <table style="width:100%;">
-                    <tr><td class="label-caps" style="width:40%;">Architecture</td><td style="color:#06B6D4;">2-Layer Graph Attention Network (GATConv)</td></tr>
-                    <tr><td class="label-caps">Parameters</td><td style="color:#F8FAFC; font-weight:600;">{total_params:,}</td></tr>
-                    <tr><td class="label-caps">Input Features</td><td>25-dim node features + 2 degree features (runtime)</td></tr>
-                    <tr><td class="label-caps">Hidden Channels</td><td>64 channels, 4 attention heads</td></tr>
-                    <tr><td class="label-caps">Readout</td><td>Mean + Max pooling + 15 graph-level structural features</td></tr>
-                    <tr><td class="label-caps">Classifier</td><td>Linear(143&rarr;64) &rarr; ReLU &rarr; Linear(64&rarr;32) &rarr; ReLU &rarr; Linear(32&rarr;2)</td></tr>
-                    <tr><td class="label-caps">Ensemble</td><td>GAT probabilities + 15 graph features &rarr; Gradient Boosting (200 trees)</td></tr>
-                </table>
+        st.markdown(f'''
+        <div class="soc-metric-row">
+            <div class="soc-metric"><div class="soc-metric-value">{len(result.evidence)}</div><div class="soc-metric-label">Total Evidence</div></div>
+            <div class="soc-metric"><div class="soc-metric-value">{result.duration_seconds:.1f}s</div><div class="soc-metric-label">Analysis Time</div></div>
+            <div class="soc-metric"><div class="soc-metric-value">{len(result.agent_stats)}</div><div class="soc-metric-label">Agents Active</div></div>
+            <div class="soc-metric"><div class="soc-metric-value">{len(result.errors)}</div><div class="soc-metric-label">Errors</div></div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        if result.errors:
+            for err in result.errors:
+                st.error(err)
+
+        agent_groups: dict[str, list] = {}
+        for item in result.evidence:
+            agent_groups.setdefault(item.source_agent, []).append(item)
+
+        for agent_name, items in sorted(agent_groups.items()):
+            color = AGENT_COLORS.get(agent_name, "#94A3B8")
+            icon = AGENT_ICONS.get(agent_name, "description")
+            with st.expander(f"{agent_name.upper()} AGENT -- {len(items)} FINDINGS", expanded=False):
+                for item in items[:50]:
+                    risk = item.attributes.get("risk_level", item.attributes.get("sensitivity_tier", 0))
+                    if risk >= 3:
+                        severity = "high"
+                        badge_level = "critical"
+                    elif risk >= 2:
+                        severity = "med"
+                        badge_level = "high"
+                    else:
+                        severity = "low"
+                        badge_level = "medium"
+                    st.markdown(f'''
+                    <div class="evidence-item {severity}">
+                        {severity_badge(badge_level)}
+                        <span class="mono" style="font-size:11px; color:{color}; margin-left:8px;">{item.evidence_type.value}</span>
+                        <span style="font-size:13px; color:#F8FAFC; margin-left:8px;">{item.description}</span>
+                    </div>
+                    ''', unsafe_allow_html=True)
+
+        # --- Behaviour graph ---
+        st.markdown('<div class="label-caps" style="margin:24px 0 0 0;">Behaviour Graph</div>', unsafe_allow_html=True)
+        st.markdown(f'''
+        <div class="graph-header-bar">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="label-caps">ATTENTION INTENSITY</span>
+                <span class="sev-badge sev-critical" style="font-size:9px;">CRITICAL</span>
+                <span class="sev-badge sev-high" style="font-size:9px;">SUSPICIOUS</span>
+                <span class="sev-badge sev-safe" style="font-size:9px;">BENIGN</span>
             </div>
-            ''', unsafe_allow_html=True)
-
-            ens_path = MODEL_DIR / "ensemble_results.json"
-            results_path = ens_path if ens_path.exists() else MODEL_DIR / "results.json"
-            if results_path.exists():
-                results = json.loads(results_path.read_text())
-                metrics = results.get("test_metrics", {})
-                label = "Ensemble Metrics" if ens_path.exists() else "GAT Metrics"
-                metrics_html = '<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">'
-                for name, val in metrics.items():
-                    metrics_html += f'<div class="soc-metric"><div class="soc-metric-value text-cyan">{val:.4f}</div><div class="soc-metric-label">{name}</div></div>'
-                metrics_html += '</div>'
-                st.markdown(f'<div class="label-caps" style="margin-top:16px;">{label}</div>{metrics_html}', unsafe_allow_html=True)
-
-            st.markdown(f'''
-            <div class="soc-card" style="margin-top:16px;">
-                <div class="label-caps" style="margin-bottom:8px;">Current Prediction</div>
-                <table style="width:100%;">
-                    <tr><td class="label-caps" style="width:40%;">Predicted Class</td><td>{render_threat_badge(explanation.risk_score)} <span style="color:#F8FAFC; margin-left:8px;">{'Malware' if explanation.prediction == 1 else 'Benign'}</span></td></tr>
-                    <tr><td class="label-caps">Confidence</td><td style="color:#06B6D4; font-weight:600;">{explanation.confidence:.4f}</td></tr>
-                    <tr><td class="label-caps">Risk Score</td><td style="color:{'#EF4444' if explanation.risk_score >= 0.6 else '#F59E0B' if explanation.risk_score >= 0.3 else '#10B981'}; font-weight:600;">{explanation.risk_score:.4f}</td></tr>
-                    <tr><td class="label-caps">Processing Time</td><td>{result.duration_seconds:.2f}s</td></tr>
-                </table>
+            <div style="display:flex; gap:24px;">
+                <span class="label-caps">NODES <span style="color:#F8FAFC; font-size:13px; font-weight:700;">{data.num_nodes}</span></span>
+                <span class="label-caps">EDGES <span style="color:#F8FAFC; font-size:13px; font-weight:700;">{data.edge_index.size(1)}</span></span>
             </div>
-            ''', unsafe_allow_html=True)
+        </div>
+        ''', unsafe_allow_html=True)
+
+        show_explanation = st.checkbox("Highlight GNNExplainer subgraph", value=True)
+        graph_html = create_graph_html(
+            data, explanation if show_explanation else None
+        )
+        st.components.v1.html(graph_html, height=550, scrolling=True)
+
+        st.markdown('''
+        <div class="graph-legend" style="padding:10px 14px; background:#0F172A; border:1px solid #334155; border-top:none; border-radius:0 0 8px 8px;">
+            <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#EF4444;"></span>Critical Vector</span>
+            <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#F59E0B;"></span>Suspicious Hook</span>
+            <span class="graph-legend-item"><span class="graph-legend-dot" style="background:#10B981;"></span>Benign</span>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        type_colors_legend = {
+            "Method": "#38BDF8", "Class": "#A78BFA", "Permission": "#F59E0B",
+            "API Call": "#EF4444", "Network": "#10B981", "Crypto": "#F472B6",
+        }
+        legend_html = '<div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;">'
+        for name, color in type_colors_legend.items():
+            legend_html += f'<span style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:{color};display:inline-block;"></span><span class="label-caps">{name}</span></span>'
+        legend_html += '</div>'
+        st.markdown(legend_html, unsafe_allow_html=True)
+
+        # --- Architecture spec table ---
+        st.markdown('<div class="label-caps" style="margin:24px 0 10px 0;">Architecture Specification</div>', unsafe_allow_html=True)
+
+        model = load_model()
+        total_params = sum(p.numel() for p in model.parameters())
+
+        st.markdown(f'''
+        <div class="soc-card">
+            <table style="width:100%;">
+                <tr>
+                    <th>Architecture Parameter</th>
+                    <th>Configuration Value</th>
+                    <th>Execution Subsystem</th>
+                    <th>Optimization Scope</th>
+                </tr>
+                <tr>
+                    <td>Network Type</td><td style="color:#06B6D4;">2-Layer GATConv</td><td>GAT Encoder</td><td>Node-level attention</td>
+                </tr>
+                <tr>
+                    <td>Parameters</td><td style="color:#F8FAFC; font-weight:700;">{total_params:,}</td><td>GAT Encoder</td><td>Global</td>
+                </tr>
+                <tr>
+                    <td>Input Features</td><td>25-dim + 2 degree (runtime)</td><td>Feature Builder</td><td>Per-node</td>
+                </tr>
+                <tr>
+                    <td>Hidden Channels</td><td>64 channels &times; 4 heads</td><td>GAT Layer 1</td><td>Multi-head attention</td>
+                </tr>
+                <tr>
+                    <td>Readout</td><td>Mean + Max pooling + 15 graph features</td><td>Graph Pooling</td><td>Graph-level</td>
+                </tr>
+                <tr>
+                    <td>Classifier</td><td>143&rarr;64&rarr;32&rarr;2 (ReLU)</td><td>MLP Head</td><td>Binary classification</td>
+                </tr>
+                <tr>
+                    <td>Ensemble</td><td>GAT prob + 15 graph feats &rarr; GBM (200 trees)</td><td>Gradient Boosting</td><td>Final risk score</td>
+                </tr>
+            </table>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        ens_path = MODEL_DIR / "ensemble_results.json"
+        results_path = ens_path if ens_path.exists() else MODEL_DIR / "results.json"
+        if results_path.exists():
+            results = json.loads(results_path.read_text())
+            metrics = results.get("test_metrics", {})
+            label = "Ensemble Metrics" if ens_path.exists() else "GAT Metrics"
+            metrics_html = '<div class="soc-metric-row">'
+            for name, val in metrics.items():
+                metrics_html += f'<div class="soc-metric"><div class="soc-metric-value text-cyan">{val:.4f}</div><div class="soc-metric-label">{name}</div></div>'
+            metrics_html += '</div>'
+            st.markdown(f'<div class="label-caps" style="margin-top:16px;">{label}</div>{metrics_html}', unsafe_allow_html=True)
+
+        st.markdown(f'''
+        <div class="soc-card" style="margin-top:16px;">
+            <div class="label-caps" style="margin-bottom:8px;">Current Prediction</div>
+            <table style="width:100%;">
+                <tr><td class="label-caps" style="width:40%;">Predicted Class</td><td>{render_threat_badge(explanation.risk_score)} <span style="color:#F8FAFC; margin-left:8px;">{'Malware' if explanation.prediction == 1 else 'Benign'}</span></td></tr>
+                <tr><td class="label-caps">Confidence</td><td style="color:#06B6D4; font-weight:700;">{explanation.confidence:.4f}</td></tr>
+                <tr><td class="label-caps">Risk Score</td><td style="color:{'#EF4444' if explanation.risk_score >= 0.6 else '#F59E0B' if explanation.risk_score >= 0.3 else '#10B981'}; font-weight:700;">{explanation.risk_score:.4f}</td></tr>
+                <tr><td class="label-caps">Processing Time</td><td>{result.duration_seconds:.2f}s</td></tr>
+            </table>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    _footer_bar()
 
 
 if __name__ == "__main__":
