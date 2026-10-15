@@ -32,8 +32,8 @@ data/models/
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/
+# Streamlit (keep config.toml, ignore secrets)
+.streamlit/secrets.toml
 
 # Claude
 .claude/
