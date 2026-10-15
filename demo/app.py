@@ -25,7 +25,7 @@ from config.settings import MODEL_DIR, EVIDENCE_DIR, GRAPHS_DIR, ExplainConfig
 
 SOC_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
 
 :root {
     --bg: #0b1326;
@@ -50,8 +50,8 @@ SOC_CSS = """
 
 section[data-testid="stSidebar"] { background-color: #131b2e !important; }
 
-h1, h2, h3 { font-family: 'Inter', sans-serif !important; color: var(--text-primary) !important; letter-spacing: -0.01em; }
-p, span, label, div { font-family: 'Inter', sans-serif; }
+h1, h2, h3 { font-family: 'Space Grotesk', sans-serif !important; color: var(--text-primary) !important; letter-spacing: -0.01em; }
+p, span, label, div { font-family: 'Space Grotesk', sans-serif; }
 
 .soc-header {
     background: linear-gradient(135deg, var(--surface) 0%, rgba(6,182,212,0.05) 100%);
@@ -61,7 +61,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     margin-bottom: 1rem;
 }
 .soc-title {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 28px;
     font-weight: 700;
     color: var(--text-primary);
@@ -69,7 +69,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     margin: 0;
 }
 .soc-subtitle {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -94,7 +94,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(16,185,129,0); }
 }
 .soc-status-text {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -141,7 +141,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     flex-direction: column;
     width: 80px; height: 80px;
     border-radius: 12px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
 }
 .soc-score-badge.critical {
     background: rgba(239,68,68,0.15);
@@ -159,7 +159,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     font-size: 28px; font-weight: 700; line-height: 1;
 }
 .soc-score-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 9px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     margin-top: 4px; opacity: 0.8;
@@ -170,7 +170,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     background: rgba(239,68,68,0.12);
     border: 1px solid rgba(239,68,68,0.35);
     color: #EF4444;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 2px 8px; border-radius: 4px;
@@ -180,7 +180,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     background: rgba(245,158,11,0.12);
     border: 1px solid rgba(245,158,11,0.35);
     color: #F59E0B;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 2px 8px; border-radius: 4px;
@@ -190,7 +190,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     background: rgba(16,185,129,0.12);
     border: 1px solid rgba(16,185,129,0.35);
     color: #10B981;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 2px 8px; border-radius: 4px;
@@ -200,7 +200,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     background: rgba(6,182,212,0.12);
     border: 1px solid rgba(6,182,212,0.35);
     color: #06B6D4;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 2px 8px; border-radius: 4px;
@@ -220,22 +220,22 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
     text-align: center;
 }
 .soc-metric-value {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 22px; font-weight: 700;
     color: var(--text-primary);
 }
 .soc-metric-label {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-muted);
     margin-top: 4px;
 }
 
-.mono { font-family: 'JetBrains Mono', monospace !important; }
-.mono-sm { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.mono { font-family: 'Fira Code', monospace !important; }
+.mono-sm { font-family: 'Fira Code', monospace; font-size: 11px; color: var(--text-muted); }
 .label-caps {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Fira Code', monospace;
     font-size: 10px; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-muted);
@@ -264,7 +264,7 @@ p, span, label, div { font-family: 'Inter', sans-serif; }
 }
 
 div[data-testid="stTabs"] button[data-baseweb="tab"] {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'Fira Code', monospace !important;
     font-size: 11px !important;
     font-weight: 600 !important;
     letter-spacing: 0.06em !important;
@@ -288,12 +288,12 @@ div[data-testid="stMetric"] {
     border-radius: 6px !important;
     padding: 12px !important;
 }
-div[data-testid="stMetric"] label { color: var(--text-muted) !important; font-family: 'JetBrains Mono', monospace !important; font-size: 10px !important; letter-spacing: 0.06em !important; text-transform: uppercase !important; }
-div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color: var(--cyan) !important; font-family: 'Inter', sans-serif !important; }
+div[data-testid="stMetric"] label { color: var(--text-muted) !important; font-family: 'Fira Code', monospace !important; font-size: 10px !important; letter-spacing: 0.06em !important; text-transform: uppercase !important; }
+div[data-testid="stMetric"] div[data-testid="stMetricValue"] { color: var(--cyan) !important; font-family: 'Space Grotesk', sans-serif !important; }
 
 table { border-collapse: collapse; width: 100%; }
 th {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'Fira Code', monospace !important;
     font-size: 10px !important; font-weight: 600 !important;
     letter-spacing: 0.06em !important; text-transform: uppercase !important;
     color: var(--text-muted) !important;
@@ -302,7 +302,7 @@ th {
     text-align: left !important;
 }
 td {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'Fira Code', monospace !important;
     font-size: 12px !important;
     color: var(--text-primary) !important;
     border-bottom: 1px solid rgba(51,65,85,0.2) !important;
@@ -372,15 +372,15 @@ def create_risk_gauge(score: float) -> go.Figure:
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=score * 100,
-        number={"font": {"size": 48, "color": color, "family": "Inter"}, "suffix": ""},
-        title={"text": f"<b>{label}</b>", "font": {"size": 14, "color": color, "family": "JetBrains Mono"}},
+        number={"font": {"size": 48, "color": color, "family": "Space Grotesk"}, "suffix": ""},
+        title={"text": f"<b>{label}</b>", "font": {"size": 14, "color": color, "family": "Fira Code"}},
         gauge={
             "axis": {
                 "range": [0, 100],
                 "tickwidth": 1,
                 "tickcolor": "#334155",
                 "dtick": 20,
-                "tickfont": {"color": "#94A3B8", "size": 10, "family": "JetBrains Mono"},
+                "tickfont": {"color": "#94A3B8", "size": 10, "family": "Fira Code"},
             },
             "bar": {"color": color, "thickness": 0.8},
             "bgcolor": "#1E293B",
@@ -403,7 +403,7 @@ def create_risk_gauge(score: float) -> go.Figure:
         margin=dict(l=30, r=30, t=30, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font={"family": "Inter"},
+        font={"family": "Space Grotesk"},
     )
     return fig
 
@@ -558,200 +558,349 @@ def load_preanalyzed(_sha):
     return result, data, explanation, attributions
 
 
+def _svg_icon(name, color="#06B6D4", size=20):
+    icons = {
+        "shield": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+        "file": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        "code": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+        "globe": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>',
+        "lock": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>',
+        "hub": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/><line x1="2" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="22" y2="12"/></svg>',
+        "brain": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 015 5c0 1.5-.5 2.5-1.5 3.5L12 14l-3.5-3.5C7.5 9.5 7 8.5 7 7a5 5 0 015-5z"/><path d="M12 14v8"/><path d="M8 18h8"/></svg>',
+        "graph": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><line x1="7.5" y1="7.5" x2="10.5" y2="10.5"/><line x1="13.5" y1="10.5" x2="16.5" y2="7.5"/><line x1="7.5" y1="16.5" x2="10.5" y2="13.5"/><line x1="13.5" y1="13.5" x2="16.5" y2="16.5"/></svg>',
+        "eye": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        "target": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+        "layers": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+        "arrow": f'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+        "package": f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="{color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+    }
+    return icons.get(name, "")
+
+
+def _pipeline_svg():
+    return '''
+    <svg viewBox="0 0 900 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:900px; display:block; margin:0 auto;">
+        <defs>
+            <linearGradient id="glow-cyan" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:0.15"/>
+                <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:0"/>
+            </linearGradient>
+            <filter id="node-glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
+        </defs>
+
+        <line x1="160" y1="60" x2="230" y2="60" stroke="#1E293B" stroke-width="2" stroke-dasharray="6,4"/>
+        <polygon points="226,55 236,60 226,65" fill="#334155"/>
+        <line x1="330" y1="60" x2="400" y2="60" stroke="#1E293B" stroke-width="2" stroke-dasharray="6,4"/>
+        <polygon points="396,55 406,60 396,65" fill="#334155"/>
+        <line x1="500" y1="60" x2="570" y2="60" stroke="#1E293B" stroke-width="2" stroke-dasharray="6,4"/>
+        <polygon points="566,55 576,60 566,65" fill="#334155"/>
+        <line x1="670" y1="60" x2="740" y2="60" stroke="#1E293B" stroke-width="2" stroke-dasharray="6,4"/>
+        <polygon points="736,55 746,60 736,65" fill="#334155"/>
+
+        <rect x="40" y="25" width="120" height="70" rx="10" fill="#0F172A" stroke="#334155" stroke-width="1.5"/>
+        <text x="100" y="55" text-anchor="middle" fill="#F8FAFC" font-family="Space Grotesk" font-size="13" font-weight="600">APK Input</text>
+        <text x="100" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Android package</text>
+
+        <rect x="236" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5" opacity="0.9"/>
+        <text x="286" y="55" text-anchor="middle" fill="#F59E0B" font-family="Space Grotesk" font-size="13" font-weight="600">4 Agents</text>
+        <text x="286" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Static analysis</text>
+
+        <rect x="406" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#8B5CF6" stroke-width="1.5" opacity="0.9"/>
+        <text x="456" y="55" text-anchor="middle" fill="#8B5CF6" font-family="Space Grotesk" font-size="13" font-weight="600">Graph</text>
+        <text x="456" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Behaviour net</text>
+
+        <rect x="576" y="25" width="100" height="70" rx="10" fill="#0F172A" stroke="#06B6D4" stroke-width="1.5" opacity="0.9"/>
+        <text x="626" y="55" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="13" font-weight="600">GAT</text>
+        <text x="626" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">Classify</text>
+
+        <rect x="746" y="25" width="120" height="70" rx="10" fill="#0F172A" stroke="#10B981" stroke-width="1.5" opacity="0.9"/>
+        <text x="806" y="55" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="13" font-weight="600">Explain</text>
+        <text x="806" y="75" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="10">XAI + MITRE</text>
+    </svg>
+    '''
+
+
+def _coordinator_svg():
+    return '''
+    <svg viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:520px; display:block; margin:0 auto;">
+        <defs>
+            <filter id="c-glow">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+            </filter>
+        </defs>
+
+        <line x1="260" y1="80" x2="110" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="260" y1="80" x2="260" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="260" y1="80" x2="410" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="260" y1="80" x2="185" y2="140" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+        <circle cx="260" cy="60" r="30" fill="#0F172A" stroke="#06B6D4" stroke-width="2" filter="url(#c-glow)"/>
+        <text x="260" y="56" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="10" font-weight="600">COORD</text>
+        <text x="260" y="70" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">dispatch</text>
+
+        <rect x="50" y="140" width="120" height="55" rx="8" fill="#0F172A" stroke="#F59E0B" stroke-width="1.5"/>
+        <text x="110" y="163" text-anchor="middle" fill="#F59E0B" font-family="Space Grotesk" font-size="11" font-weight="600">Manifest</text>
+        <text x="110" y="180" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">permissions</text>
+
+        <rect x="190" y="140" width="120" height="55" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+        <text x="250" y="163" text-anchor="middle" fill="#38BDF8" font-family="Space Grotesk" font-size="11" font-weight="600">Bytecode</text>
+        <text x="250" y="180" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">call graph</text>
+
+        <rect x="50" y="210" width="120" height="55" rx="8" fill="#0F172A" stroke="#10B981" stroke-width="1.5"/>
+        <text x="110" y="233" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="11" font-weight="600">Network</text>
+        <text x="110" y="250" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">C2 detect</text>
+
+        <rect x="190" y="210" width="120" height="55" rx="8" fill="#0F172A" stroke="#F472B6" stroke-width="1.5"/>
+        <text x="250" y="233" text-anchor="middle" fill="#F472B6" font-family="Space Grotesk" font-size="11" font-weight="600">Crypto</text>
+        <text x="250" y="250" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9">weak algo</text>
+
+        <line x1="260" y1="80" x2="110" y2="210" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <line x1="260" y1="80" x2="250" y2="210" stroke="#334155" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+        <rect x="360" y="155" width="140" height="110" rx="10" fill="rgba(6,182,212,0.05)" stroke="#1E293B" stroke-width="1"/>
+        <text x="430" y="178" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="9" font-weight="500">EvidenceItem[]</text>
+        <text x="430" y="198" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.entity</text>
+        <text x="430" y="212" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.source_agent</text>
+        <text x="430" y="226" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.attributes</text>
+        <text x="430" y="240" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="8">.confidence</text>
+        <line x1="310" y1="195" x2="360" y2="210" stroke="#334155" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <text x="260" y="300" text-anchor="middle" fill="#475569" font-family="Space Grotesk" font-size="11">Star topology  /  No inter-agent communication  /  Parallel dispatch</text>
+    </svg>
+    '''
+
+
+def _gat_svg():
+    return '''
+    <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:600px; display:block; margin:0 auto;">
+        <text x="20" y="20" fill="#475569" font-family="Fira Code" font-size="10">GAT Architecture</text>
+
+        <rect x="20" y="40" width="90" height="130" rx="6" fill="rgba(6,182,212,0.06)" stroke="#1E293B" stroke-width="1"/>
+        <text x="65" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Input</text>
+        <text x="65" y="78" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="11" font-weight="600">25-dim</text>
+        <text x="65" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">node feats</text>
+        <circle cx="50" cy="120" r="4" fill="#38BDF8" opacity="0.6"/><circle cx="65" cy="115" r="4" fill="#F59E0B" opacity="0.6"/>
+        <circle cx="80" cy="122" r="4" fill="#EF4444" opacity="0.6"/><circle cx="58" cy="135" r="4" fill="#10B981" opacity="0.6"/>
+        <circle cx="73" cy="138" r="4" fill="#F472B6" opacity="0.6"/>
+        <line x1="50" y1="120" x2="65" y2="115" stroke="#334155" stroke-width="0.8"/>
+        <line x1="65" y1="115" x2="80" y2="122" stroke="#334155" stroke-width="0.8"/>
+        <line x1="58" y1="135" x2="73" y2="138" stroke="#334155" stroke-width="0.8"/>
+        <line x1="50" y1="120" x2="58" y2="135" stroke="#334155" stroke-width="0.8"/>
+
+        <line x1="110" y1="105" x2="145" y2="105" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="141,100 151,105 141,110" fill="#334155"/>
+
+        <rect x="150" y="40" width="110" height="130" rx="6" fill="rgba(139,92,246,0.06)" stroke="#1E293B" stroke-width="1"/>
+        <text x="205" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Layer 1</text>
+        <text x="205" y="78" text-anchor="middle" fill="#8B5CF6" font-family="Space Grotesk" font-size="11" font-weight="600">GATConv</text>
+        <text x="205" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">25 -> 64</text>
+        <text x="205" y="110" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">4 heads</text>
+        <text x="205" y="126" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ BatchNorm</text>
+        <text x="205" y="142" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ ELU</text>
+        <text x="205" y="158" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ Dropout</text>
+
+        <line x1="260" y1="105" x2="295" y2="105" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="291,100 301,105 291,110" fill="#334155"/>
+
+        <rect x="300" y="40" width="110" height="130" rx="6" fill="rgba(6,182,212,0.06)" stroke="#1E293B" stroke-width="1"/>
+        <text x="355" y="60" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Layer 2</text>
+        <text x="355" y="78" text-anchor="middle" fill="#06B6D4" font-family="Space Grotesk" font-size="11" font-weight="600">GATConv</text>
+        <text x="355" y="94" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">256 -> 64</text>
+        <text x="355" y="110" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">1 head</text>
+        <text x="355" y="126" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ BatchNorm</text>
+        <text x="355" y="142" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">+ Readout</text>
+        <text x="355" y="158" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">mean+max</text>
+
+        <line x1="410" y1="105" x2="445" y2="105" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="441,100 451,105 441,110" fill="#334155"/>
+
+        <rect x="450" y="55" width="130" height="100" rx="6" fill="rgba(16,185,129,0.06)" stroke="#1E293B" stroke-width="1"/>
+        <text x="515" y="75" text-anchor="middle" fill="#94A3B8" font-family="Fira Code" font-size="9">Classifier</text>
+        <text x="515" y="95" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">143 -> 64 -> 32 -> 2</text>
+        <text x="515" y="115" text-anchor="middle" fill="#10B981" font-family="Space Grotesk" font-size="11" font-weight="600">Malware?</text>
+        <text x="515" y="135" text-anchor="middle" fill="#64748B" font-family="Fira Code" font-size="8">36,258 params</text>
+    </svg>
+    '''
+
+
 def render_landing():
-    st.markdown('''
-    <div class="soc-header" style="text-align:center; padding:2rem 1.5rem;">
-        <div class="soc-title" style="font-size:36px;">🛡️ APKSentinel</div>
-        <div style="font-family:'Inter',sans-serif; font-size:16px; color:#94A3B8; margin-top:8px; max-width:640px; margin-left:auto; margin-right:auto; line-height:1.6;">
-            Automated multi-agent analysis and explainable risk scoring of fraudulent Android banking applications
+    # Hero
+    st.markdown(f'''
+    <div class="soc-header" style="text-align:center; padding:2.5rem 1.5rem; position:relative; overflow:hidden;">
+        <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 70%);"></div>
+        <div style="position:relative;">
+            <div style="display:inline-flex; align-items:center; gap:12px; margin-bottom:4px;">
+                {_svg_icon("shield", "#06B6D4", 32)}
+                <span class="soc-title" style="font-size:38px; letter-spacing:-0.03em;">APKSentinel</span>
+            </div>
+            <div style="font-family:'Space Grotesk',sans-serif; font-size:15px; color:#64748B; margin-top:8px; max-width:600px; margin-left:auto; margin-right:auto; line-height:1.7; letter-spacing:0.01em;">
+                Automated multi-agent analysis and explainable risk scoring<br>of fraudulent Android banking applications
+            </div>
+            <div style="margin-top:16px;">
+                <span class="chip-cyan" style="font-size:9px; padding:3px 10px;">STATIC ANALYSIS</span>
+                <span class="chip-cyan" style="font-size:9px; padding:3px 10px; margin-left:4px;">GRAPH NEURAL NETWORK</span>
+                <span class="chip-cyan" style="font-size:9px; padding:3px 10px; margin-left:4px;">EXPLAINABLE AI</span>
+            </div>
         </div>
     </div>
     ''', unsafe_allow_html=True)
 
+    # Stats
     st.markdown('''
     <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:1.5rem 0;">
-        <div class="soc-metric"><div class="soc-metric-value text-cyan">94.05%</div><div class="soc-metric-label">Accuracy</div></div>
-        <div class="soc-metric"><div class="soc-metric-value text-cyan">0.958</div><div class="soc-metric-label">F1 Score</div></div>
-        <div class="soc-metric"><div class="soc-metric-value text-cyan">98.3%</div><div class="soc-metric-label">Recall</div></div>
-        <div class="soc-metric"><div class="soc-metric-value text-cyan">554</div><div class="soc-metric-label">APKs Analyzed</div></div>
-    </div>
-    ''', unsafe_allow_html=True)
-
-    # Pipeline
-    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Analysis Pipeline</div>', unsafe_allow_html=True)
-    st.markdown('''
-    <div style="display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:wrap; margin-bottom:24px;">
-        <div class="soc-metric" style="min-width:100px; flex:0;">
-            <div style="font-size:20px;">📦</div>
-            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">APK Input</div>
-            <div style="font-size:10px; color:#94A3B8;">Android package</div>
+        <div class="soc-metric" style="min-width:130px;">
+            <div class="soc-metric-value" style="color:#06B6D4; font-size:26px;">94.05<span style="font-size:14px; opacity:0.7;">%</span></div>
+            <div class="soc-metric-label">Accuracy</div>
         </div>
-        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
-        <div class="soc-metric" style="min-width:100px; flex:0;">
-            <div style="font-size:20px;">🤖</div>
-            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">4 Agents</div>
-            <div style="font-size:10px; color:#94A3B8;">Static analysis</div>
+        <div class="soc-metric" style="min-width:130px;">
+            <div class="soc-metric-value" style="color:#8B5CF6; font-size:26px;">0.958</div>
+            <div class="soc-metric-label">F1 Score</div>
         </div>
-        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
-        <div class="soc-metric" style="min-width:100px; flex:0;">
-            <div style="font-size:20px;">🕸️</div>
-            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">Graph</div>
-            <div style="font-size:10px; color:#94A3B8;">Behaviour graph</div>
+        <div class="soc-metric" style="min-width:130px;">
+            <div class="soc-metric-value" style="color:#10B981; font-size:26px;">98.3<span style="font-size:14px; opacity:0.7;">%</span></div>
+            <div class="soc-metric-label">Recall</div>
         </div>
-        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
-        <div class="soc-metric" style="min-width:100px; flex:0;">
-            <div style="font-size:20px;">🧠</div>
-            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">GAT</div>
-            <div style="font-size:10px; color:#94A3B8;">Classification</div>
-        </div>
-        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
-        <div class="soc-metric" style="min-width:100px; flex:0;">
-            <div style="font-size:20px;">🔍</div>
-            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">Explain</div>
-            <div style="font-size:10px; color:#94A3B8;">XAI + MITRE</div>
+        <div class="soc-metric" style="min-width:130px;">
+            <div class="soc-metric-value" style="color:#F59E0B; font-size:26px;">554</div>
+            <div class="soc-metric-label">APKs Analyzed</div>
         </div>
     </div>
     ''', unsafe_allow_html=True)
 
-    # Agents
-    st.markdown('<div class="label-caps" style="margin:16px 0 12px 0; text-align:center; font-size:12px;">Specialized Analysis Agents</div>', unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
+    # Pipeline SVG
+    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">End-to-End Pipeline</div>', unsafe_allow_html=True)
+    st.markdown(_pipeline_svg(), unsafe_allow_html=True)
 
-    with col1:
-        st.markdown('''
-        <div class="soc-card" style="border-left:3px solid #F59E0B;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">📋</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">Manifest Agent</span>
-            </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-                • Parses AndroidManifest.xml<br>
-                • Extracts 30 dangerous permissions<br>
-                • Identifies exported components<br>
-                • Flags accessibility service abuse
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
+    st.markdown('<div style="height:24px;"></div>', unsafe_allow_html=True)
 
-        st.markdown('''
-        <div class="soc-card" style="border-left:3px solid #10B981;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">🌐</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Network Agent</span>
-            </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-                • Extracts URLs, IPs, domains<br>
-                • Decodes base64-encoded URLs<br>
-                • Detects C2 indicators<br>
-                • Flags high-entropy domains
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
+    # Agent Architecture SVG
+    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">Agent Architecture</div>', unsafe_allow_html=True)
 
-    with col2:
-        st.markdown('''
-        <div class="soc-card" style="border-left:3px solid #38BDF8;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">⚙️</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#38BDF8; text-transform:uppercase; letter-spacing:0.06em;">Bytecode Agent</span>
-            </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-                • Analyzes DEX via Androguard<br>
-                • Builds function call graph<br>
-                • Flags ~150 sensitive API calls<br>
-                • Detects reflection & dynamic loading
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
+    col_svg, col_cards = st.columns([1, 1])
 
-        st.markdown('''
-        <div class="soc-card" style="border-left:3px solid #F472B6;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">🔐</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F472B6; text-transform:uppercase; letter-spacing:0.06em;">Crypto Agent</span>
-            </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-                • Scans javax.crypto / java.security<br>
-                • Detects hardcoded keys<br>
-                • Flags weak algorithms (DES, MD5)<br>
-                • Identifies custom crypto patterns
-            </div>
-        </div>
-        ''', unsafe_allow_html=True)
+    with col_svg:
+        st.markdown(_coordinator_svg(), unsafe_allow_html=True)
 
-    # Coordinator
-    st.markdown('''
-    <div class="soc-card-glow-cyan" style="margin-top:8px;">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <span style="font-size:18px;">🎯</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">Coordinator</span>
-        </div>
-        <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
-            Dispatches all 4 agents in parallel on each APK. Collects standardized EvidenceItem objects, deduplicates by entity, and passes merged evidence to the graph builder. Star topology — agents communicate only through the coordinator.
-        </div>
-    </div>
-    ''', unsafe_allow_html=True)
+    with col_cards:
+        agents = [
+            ("Manifest Agent", "#F59E0B", "file", [
+                "Parses AndroidManifest.xml",
+                "Extracts 30 dangerous permissions",
+                "Identifies exported components",
+                "Flags accessibility service abuse",
+            ]),
+            ("Bytecode Agent", "#38BDF8", "code", [
+                "Analyzes DEX via Androguard",
+                "Builds function call graph",
+                "Flags ~150 sensitive API calls",
+                "Detects reflection and dynamic loading",
+            ]),
+            ("Network Agent", "#10B981", "globe", [
+                "Extracts URLs, IPs, domains",
+                "Decodes base64-encoded URLs",
+                "Detects C2 indicators",
+                "Flags high-entropy domains",
+            ]),
+            ("Crypto Agent", "#F472B6", "lock", [
+                "Scans javax.crypto / java.security",
+                "Detects hardcoded keys",
+                "Flags weak algorithms (DES, MD5)",
+                "Identifies custom crypto patterns",
+            ]),
+        ]
+        for name, color, icon, items in agents:
+            items_html = "".join(
+                f'<div style="font-size:12px; color:#94A3B8; padding:1px 0; display:flex; align-items:baseline; gap:6px;">'
+                f'<span style="width:4px; height:4px; border-radius:50%; background:{color}; flex-shrink:0; margin-top:6px;"></span>{item}</div>'
+                for item in items
+            )
+            st.markdown(f'''
+            <div class="soc-card" style="border-left:3px solid {color}; margin-bottom:8px; padding:10px 14px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    {_svg_icon(icon, color, 16)}
+                    <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:{color}; text-transform:uppercase; letter-spacing:0.06em;">{name}</span>
+                </div>
+                {items_html}
+            </div>
+            ''', unsafe_allow_html=True)
 
-    # Classification
-    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Classification Models</div>', unsafe_allow_html=True)
+    # GAT Architecture
+    st.markdown('<div class="label-caps" style="margin:28px 0 16px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">GAT Architecture</div>', unsafe_allow_html=True)
+    st.markdown(_gat_svg(), unsafe_allow_html=True)
+
+    # Model comparison
+    st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
     col_gat, col_ens = st.columns(2)
 
     with col_gat:
-        st.markdown('''
+        st.markdown(f'''
         <div class="soc-card">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">🧠</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">Graph Attention Network</span>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                {_svg_icon("graph", "#06B6D4", 18)}
+                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">GAT Only</span>
             </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.6; margin-bottom:12px;">
-                2-layer GAT with 4 attention heads. Learns which nodes matter most for classification. 36,258 parameters, CPU-trained.
+            <div style="font-size:13px; color:#64748B; line-height:1.6; margin-bottom:14px;">
+                2-layer Graph Attention Network with 4 heads. 36,258 parameters. Trained on CPU.
             </div>
-            <div style="margin:4px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">85.7%</span></div>
-                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:85.7%; height:100%; background:#06B6D4; border-radius:3px;"></div></div>
+            <div style="margin:6px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">85.71%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:85.7%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">89.7%</span></div>
-                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:89.7%; height:100%; background:#06B6D4; border-radius:3px;"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">89.66%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:89.7%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:600;">92.24%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:92.2%; height:100%; background:linear-gradient(90deg,#06B6D4,#0891B2); border-radius:3px;"></div></div>
             </div>
         </div>
         ''', unsafe_allow_html=True)
 
     with col_ens:
-        st.markdown('''
+        st.markdown(f'''
         <div class="soc-card-glow-green">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">📊</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Ensemble (GAT + GBM)</span>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                {_svg_icon("layers", "#10B981", 18)}
+                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Ensemble (GAT + GBM)</span>
+                <span class="chip-nominal" style="font-size:8px; padding:1px 6px; margin-left:auto;">BEST</span>
             </div>
-            <div style="font-size:13px; color:#94A3B8; line-height:1.6; margin-bottom:12px;">
-                Gradient Boosting over 33 features: 15 base graph features + 18 structural features + GAT probability.
+            <div style="font-size:13px; color:#64748B; line-height:1.6; margin-bottom:14px;">
+                Gradient Boosting over 33 features: 15 graph-level + 18 structural + GAT probability.
             </div>
-            <div style="margin:4px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">94.05%</span></div>
-                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:94%; height:100%; background:#10B981; border-radius:3px;"></div></div>
-            </div>
-            <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">95.8%</span></div>
-                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95.8%; height:100%; background:#10B981; border-radius:3px;"></div></div>
+            <div style="margin:6px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">94.05%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:94%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
             <div style="margin:8px 0;">
-                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Recall</span><span style="color:#F8FAFC; font-weight:600;">98.3%</span></div>
-                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:98.3%; height:100%; background:#10B981; border-radius:3px;"></div></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">95.80%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95.8%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>Recall</span><span style="color:#F8FAFC; font-weight:600;">98.28%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:98.3%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B;"><span>AUC-ROC</span><span style="color:#F8FAFC; font-weight:600;">95.03%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:5px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95%; height:100%; background:linear-gradient(90deg,#10B981,#059669); border-radius:3px;"></div></div>
             </div>
         </div>
         ''', unsafe_allow_html=True)
 
     # Explainability
-    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Explainability</div>', unsafe_allow_html=True)
+    st.markdown('<div class="label-caps" style="margin:28px 0 12px 0; text-align:center; font-size:11px; letter-spacing:0.12em;">Explainability Layer</div>', unsafe_allow_html=True)
     col_xai, col_mitre = st.columns(2)
 
     with col_xai:
-        st.markdown('''
-        <div class="soc-card" style="border-left:3px solid #10B981;">
+        st.markdown(f'''
+        <div class="soc-card" style="border-left:3px solid #8B5CF6;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">🔬</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">GNNExplainer</span>
+                {_svg_icon("eye", "#8B5CF6", 16)}
+                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#8B5CF6; text-transform:uppercase; letter-spacing:0.06em;">GNNExplainer</span>
             </div>
             <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
                 Generates node importance masks over the behaviour graph. Top-15 nodes form the explanation subgraph. Each node traces back to its source agent for attribution percentages.
@@ -760,11 +909,11 @@ def render_landing():
         ''', unsafe_allow_html=True)
 
     with col_mitre:
-        st.markdown('''
+        st.markdown(f'''
         <div class="soc-card" style="border-left:3px solid #F59E0B;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                <span style="font-size:18px;">⚔️</span>
-                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">MITRE ATT&CK Mapping</span>
+                {_svg_icon("target", "#F59E0B", 16)}
+                <span style="font-family:'Fira Code',monospace; font-size:11px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">MITRE ATT&CK Mapping</span>
             </div>
             <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
                 Maps 28 permissions and 29 API calls to ATT&CK for Mobile techniques and tactics. Based on Tanha & Kafaie (IEEE Access, 2025).
@@ -774,12 +923,13 @@ def render_landing():
 
     # Reference
     st.markdown('''
-    <div class="soc-card" style="margin-top:16px; text-align:center;">
-        <div class="label-caps" style="margin-bottom:6px;">Reference Paper</div>
+    <div class="soc-card" style="margin-top:20px; text-align:center; border:1px solid rgba(6,182,212,0.15);">
+        <div class="label-caps" style="margin-bottom:6px; letter-spacing:0.12em;">Reference</div>
         <div style="font-size:13px; color:#94A3B8; line-height:1.6;">
             M. Tanha and S. Kafaie, "A Review of Explainable AI for Android Malware Detection and Analysis,"<br>
-            <span style="color:#06B6D4;">IEEE Access</span>, vol. 13, pp. 141958–141974, 2025. DOI: 10.1109/ACCESS.2025.3597575
+            <span style="color:#06B6D4;">IEEE Access</span>, vol. 13, pp. 141958-141974, 2025
         </div>
+        <div style="font-family:'Fira Code',monospace; font-size:10px; color:#475569; margin-top:4px;">DOI: 10.1109/ACCESS.2025.3597575</div>
     </div>
     ''', unsafe_allow_html=True)
 
@@ -787,7 +937,7 @@ def render_landing():
 def main():
     st.set_page_config(
         page_title="APKSentinel // Threat Analysis",
-        page_icon="🛡️",
+        page_icon="shield",
         layout="wide",
     )
 
@@ -795,11 +945,11 @@ def main():
 
     page = st.sidebar.radio(
         "Navigation",
-        ["🏠 Home", "🔬 Analyze"],
+        ["Home", "Analyze"],
         label_visibility="collapsed",
     )
 
-    if page == "🏠 Home":
+    if page == "Home":
         render_landing()
         return
 
