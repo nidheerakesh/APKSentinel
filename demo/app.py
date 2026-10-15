@@ -558,18 +558,254 @@ def load_preanalyzed(_sha):
     return result, data, explanation, attributions
 
 
+def render_landing():
+    st.markdown('''
+    <div class="soc-header" style="text-align:center; padding:2rem 1.5rem;">
+        <div class="soc-title" style="font-size:36px;">🛡️ APKSentinel</div>
+        <div style="font-family:'Inter',sans-serif; font-size:16px; color:#94A3B8; margin-top:8px; max-width:640px; margin-left:auto; margin-right:auto; line-height:1.6;">
+            Automated multi-agent analysis and explainable risk scoring of fraudulent Android banking applications
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    st.markdown('''
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:1.5rem 0;">
+        <div class="soc-metric"><div class="soc-metric-value text-cyan">94.05%</div><div class="soc-metric-label">Accuracy</div></div>
+        <div class="soc-metric"><div class="soc-metric-value text-cyan">0.958</div><div class="soc-metric-label">F1 Score</div></div>
+        <div class="soc-metric"><div class="soc-metric-value text-cyan">98.3%</div><div class="soc-metric-label">Recall</div></div>
+        <div class="soc-metric"><div class="soc-metric-value text-cyan">554</div><div class="soc-metric-label">APKs Analyzed</div></div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Pipeline
+    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Analysis Pipeline</div>', unsafe_allow_html=True)
+    st.markdown('''
+    <div style="display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:wrap; margin-bottom:24px;">
+        <div class="soc-metric" style="min-width:100px; flex:0;">
+            <div style="font-size:20px;">📦</div>
+            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">APK Input</div>
+            <div style="font-size:10px; color:#94A3B8;">Android package</div>
+        </div>
+        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
+        <div class="soc-metric" style="min-width:100px; flex:0;">
+            <div style="font-size:20px;">🤖</div>
+            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">4 Agents</div>
+            <div style="font-size:10px; color:#94A3B8;">Static analysis</div>
+        </div>
+        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
+        <div class="soc-metric" style="min-width:100px; flex:0;">
+            <div style="font-size:20px;">🕸️</div>
+            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">Graph</div>
+            <div style="font-size:10px; color:#94A3B8;">Behaviour graph</div>
+        </div>
+        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
+        <div class="soc-metric" style="min-width:100px; flex:0;">
+            <div style="font-size:20px;">🧠</div>
+            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">GAT</div>
+            <div style="font-size:10px; color:#94A3B8;">Classification</div>
+        </div>
+        <span style="color:#334155; font-size:18px; padding:0 6px;">▸</span>
+        <div class="soc-metric" style="min-width:100px; flex:0;">
+            <div style="font-size:20px;">🔍</div>
+            <div style="font-size:12px; font-weight:600; color:#F8FAFC; margin-top:4px;">Explain</div>
+            <div style="font-size:10px; color:#94A3B8;">XAI + MITRE</div>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Agents
+    st.markdown('<div class="label-caps" style="margin:16px 0 12px 0; text-align:center; font-size:12px;">Specialized Analysis Agents</div>', unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #F59E0B;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">📋</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">Manifest Agent</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                • Parses AndroidManifest.xml<br>
+                • Extracts 30 dangerous permissions<br>
+                • Identifies exported components<br>
+                • Flags accessibility service abuse
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #10B981;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">🌐</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Network Agent</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                • Extracts URLs, IPs, domains<br>
+                • Decodes base64-encoded URLs<br>
+                • Detects C2 indicators<br>
+                • Flags high-entropy domains
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #38BDF8;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">⚙️</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#38BDF8; text-transform:uppercase; letter-spacing:0.06em;">Bytecode Agent</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                • Analyzes DEX via Androguard<br>
+                • Builds function call graph<br>
+                • Flags ~150 sensitive API calls<br>
+                • Detects reflection & dynamic loading
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #F472B6;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">🔐</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F472B6; text-transform:uppercase; letter-spacing:0.06em;">Crypto Agent</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                • Scans javax.crypto / java.security<br>
+                • Detects hardcoded keys<br>
+                • Flags weak algorithms (DES, MD5)<br>
+                • Identifies custom crypto patterns
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    # Coordinator
+    st.markdown('''
+    <div class="soc-card-glow-cyan" style="margin-top:8px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🎯</span>
+            <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">Coordinator</span>
+        </div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+            Dispatches all 4 agents in parallel on each APK. Collects standardized EvidenceItem objects, deduplicates by entity, and passes merged evidence to the graph builder. Star topology — agents communicate only through the coordinator.
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Classification
+    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Classification Models</div>', unsafe_allow_html=True)
+    col_gat, col_ens = st.columns(2)
+
+    with col_gat:
+        st.markdown('''
+        <div class="soc-card">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">🧠</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#06B6D4; text-transform:uppercase; letter-spacing:0.06em;">Graph Attention Network</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.6; margin-bottom:12px;">
+                2-layer GAT with 4 attention heads. Learns which nodes matter most for classification. 36,258 parameters, CPU-trained.
+            </div>
+            <div style="margin:4px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">85.7%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:85.7%; height:100%; background:#06B6D4; border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">89.7%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:89.7%; height:100%; background:#06B6D4; border-radius:3px;"></div></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with col_ens:
+        st.markdown('''
+        <div class="soc-card-glow-green">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">📊</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">Ensemble (GAT + GBM)</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.6; margin-bottom:12px;">
+                Gradient Boosting over 33 features: 15 base graph features + 18 structural features + GAT probability.
+            </div>
+            <div style="margin:4px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Accuracy</span><span style="color:#F8FAFC; font-weight:600;">94.05%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:94%; height:100%; background:#10B981; border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>F1 Score</span><span style="color:#F8FAFC; font-weight:600;">95.8%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:95.8%; height:100%; background:#10B981; border-radius:3px;"></div></div>
+            </div>
+            <div style="margin:8px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94A3B8;"><span>Recall</span><span style="color:#F8FAFC; font-weight:600;">98.3%</span></div>
+                <div style="background:rgba(51,65,85,0.3); height:6px; border-radius:3px; margin-top:4px; overflow:hidden;"><div style="width:98.3%; height:100%; background:#10B981; border-radius:3px;"></div></div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    # Explainability
+    st.markdown('<div class="label-caps" style="margin:24px 0 12px 0; text-align:center; font-size:12px;">Explainability</div>', unsafe_allow_html=True)
+    col_xai, col_mitre = st.columns(2)
+
+    with col_xai:
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #10B981;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">🔬</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#10B981; text-transform:uppercase; letter-spacing:0.06em;">GNNExplainer</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                Generates node importance masks over the behaviour graph. Top-15 nodes form the explanation subgraph. Each node traces back to its source agent for attribution percentages.
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with col_mitre:
+        st.markdown('''
+        <div class="soc-card" style="border-left:3px solid #F59E0B;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:18px;">⚔️</span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#F59E0B; text-transform:uppercase; letter-spacing:0.06em;">MITRE ATT&CK Mapping</span>
+            </div>
+            <div style="font-size:13px; color:#94A3B8; line-height:1.7;">
+                Maps 28 permissions and 29 API calls to ATT&CK for Mobile techniques and tactics. Based on Tanha & Kafaie (IEEE Access, 2025).
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    # Reference
+    st.markdown('''
+    <div class="soc-card" style="margin-top:16px; text-align:center;">
+        <div class="label-caps" style="margin-bottom:6px;">Reference Paper</div>
+        <div style="font-size:13px; color:#94A3B8; line-height:1.6;">
+            M. Tanha and S. Kafaie, "A Review of Explainable AI for Android Malware Detection and Analysis,"<br>
+            <span style="color:#06B6D4;">IEEE Access</span>, vol. 13, pp. 141958–141974, 2025. DOI: 10.1109/ACCESS.2025.3597575
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+
 def main():
     st.set_page_config(
-        page_title="MalwareScope // Threat Analysis",
+        page_title="APKSentinel // Threat Analysis",
         page_icon="🛡️",
         layout="wide",
     )
 
     st.markdown(SOC_CSS, unsafe_allow_html=True)
 
+    page = st.sidebar.radio(
+        "Navigation",
+        ["🏠 Home", "🔬 Analyze"],
+        label_visibility="collapsed",
+    )
+
+    if page == "🏠 Home":
+        render_landing()
+        return
+
     st.markdown('''
     <div class="soc-header">
-        <div class="soc-title">MalwareScope</div>
+        <div class="soc-title">APKSentinel</div>
         <div class="soc-subtitle">Multi-Agent Static Analysis &bull; Explainable GAT Classification</div>
         <div class="soc-status-bar">
             <div class="soc-status-dot"></div>
