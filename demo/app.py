@@ -28,7 +28,7 @@ DEMO_MODEL_DIR = Path(__file__).parent / "models"
 DEMO_SAMPLES = {
     "0016B3D270A9C97E2A5DF8C7F063DABECB09BBF93BE090F9DE2BE65E91E178BE": "com.Android.SmsReg (Malware, VT:37)",
     "0059C516094CE7BE2138376D226326D26BA7DEBC6A1FB3D38C6B0810FF23BE01": "pj.ishuaji (Malware, VT:44)",
-    "0000230AE0799EAA963F0AE5337A0E6E1AC32ACF1FA4E3C5FA7783CBAE2EFE77": "RegWoosh (Benign, VT:0)",
+    "00017ED2C044CAF7B1047184673EC3E11AB10AC0E64FB7E7BCCACA0DEB13198A": "com.checkerbpg.curses (Benign, VT:0)",
 }
 
 def _resolve_evidence_dir():
@@ -1074,8 +1074,10 @@ def main():
             result, data, explanation, attributions = load_preanalyzed(run_sha)
 
     if result and explanation:
-        sha_display = pre_analyzed or result.sha256
-        package_name = getattr(result, "package_name", None) or "unknown.package"
+        sha_display = run_sha or pre_analyzed or result.sha256
+        package_name = getattr(result, "package_name", None)
+        if not package_name:
+            package_name = DEMO_SAMPLES.get(sha_display, "").split(" (")[0] or "unknown.package"
 
         st.markdown('<div style="height:8px;"></div>', unsafe_allow_html=True)
 
