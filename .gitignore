@@ -22,6 +22,10 @@ build/
 *.pkl
 data/models/
 !tests/fixtures/*.pt
+!demo/samples/*.pt
+!demo/samples/*.json
+!demo/models/*.pt
+!demo/models/*.pkl
 
 # IDE
 .vscode/

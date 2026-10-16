@@ -22,6 +22,30 @@ from explain.explainer import explain_prediction, ExplanationResult
 from explain.attribution import attribute_to_agents, generate_explanation_text, AgentAttribution
 from config.settings import MODEL_DIR, EVIDENCE_DIR, GRAPHS_DIR, ExplainConfig
 
+DEMO_DIR = Path(__file__).parent / "samples"
+DEMO_MODEL_DIR = Path(__file__).parent / "models"
+
+DEMO_SAMPLES = {
+    "0016B3D270A9C97E2A5DF8C7F063DABECB09BBF93BE090F9DE2BE65E91E178BE": "com.Android.SmsReg (Malware, VT:37)",
+    "0059C516094CE7BE2138376D226326D26BA7DEBC6A1FB3D38C6B0810FF23BE01": "pj.ishuaji (Malware, VT:44)",
+    "0000230AE0799EAA963F0AE5337A0E6E1AC32ACF1FA4E3C5FA7783CBAE2EFE77": "RegWoosh (Benign, VT:0)",
+}
+
+def _resolve_evidence_dir():
+    if EVIDENCE_DIR.exists() and any(EVIDENCE_DIR.glob("*.json")):
+        return EVIDENCE_DIR
+    return DEMO_DIR
+
+def _resolve_graphs_dir():
+    if GRAPHS_DIR.exists() and any(GRAPHS_DIR.glob("*.pt")):
+        return GRAPHS_DIR
+    return DEMO_DIR
+
+def _resolve_model_dir():
+    if (MODEL_DIR / "best_gat.pt").exists():
+        return MODEL_DIR
+    return DEMO_MODEL_DIR
+
 # ---------------------------------------------------------------------------
 # Design tokens / CSS -- SOC forensics dashboard (Stitch design)
 # ---------------------------------------------------------------------------
@@ -345,7 +369,8 @@ div[data-testid="stFileUploader"] {
 @st.cache_resource
 def load_model():
     model = MalwareGAT()
-    model_path = MODEL_DIR / "best_gat.pt"
+    model_dir = _resolve_model_dir()
+    model_path = model_dir / "best_gat.pt"
     if model_path.exists():
         model.load_state_dict(torch.load(model_path, weights_only=True))
     model.eval()
@@ -355,7 +380,8 @@ def load_model():
 @st.cache_resource
 def load_ensemble():
     import pickle
-    gbm_path = MODEL_DIR / "ensemble_gbm.pkl"
+    model_dir = _resolve_model_dir()
+    gbm_path = model_dir / "ensemble_gbm.pkl"
     if gbm_path.exists():
         with open(gbm_path, "rb") as f:
             return pickle.load(f)
@@ -523,8 +549,10 @@ def run_analysis(apk_path: str) -> tuple[AnalysisResult, object, ExplanationResu
 
 @st.cache_data(show_spinner="Running GNNExplainer...")
 def load_preanalyzed(_sha):
-    evidence_path = EVIDENCE_DIR / f"{_sha}.json"
-    graph_path = GRAPHS_DIR / f"{_sha}.pt"
+    ev_dir = _resolve_evidence_dir()
+    gr_dir = _resolve_graphs_dir()
+    evidence_path = ev_dir / f"{_sha}.json"
+    graph_path = gr_dir / f"{_sha}.pt"
 
     result = AnalysisResult.load(evidence_path)
     builder = GraphBuilder()
@@ -1006,20 +1034,22 @@ def main():
     pre_analyzed = None
     with col_sample:
         st.markdown('<div class="label-caps" style="margin-bottom:6px;">Forensic Archive</div>', unsafe_allow_html=True)
-        evidence_dir = EVIDENCE_DIR
+        evidence_dir = _resolve_evidence_dir()
         if evidence_dir.exists():
             evidence_files = sorted(evidence_dir.glob("*.json"))
             if evidence_files:
                 options = [f.stem for f in evidence_files]
+                display_names = [DEMO_SAMPLES.get(o, o[:16] + "...") for o in options]
                 demo_default = "0016B3D270A9C97E2A5DF8C7F063DABECB09BBF93BE090F9DE2BE65E91E178BE"
                 default_idx = options.index(demo_default) if demo_default in options else 0
-                selected = st.selectbox(
+                selected_idx = st.selectbox(
                     "Or select a pre-analyzed sample",
-                    options,
+                    range(len(options)),
                     index=default_idx,
+                    format_func=lambda i: display_names[i],
                     label_visibility="collapsed",
                 )
-                pre_analyzed = selected
+                pre_analyzed = options[selected_idx]
 
     result = data = explanation = attributions = None
 

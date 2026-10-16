@@ -1,0 +1,16 @@
+{
+  "train_size": 387,
+  "val_size": 83,
+  "test_size": 84,
+  "best_val_f1": 0.9739130434782609,
+  "best_classifier": "GBM",
+  "uses_gat_prob": true,
+  "num_features": 33,
+  "test_metrics": {
+    "accuracy": 0.9404761904761905,
+    "f1": 0.957983193277311,
+    "precision": 0.9344262295081968,
+    "recall": 0.9827586206896551,
+    "auc_roc": 0.9502652519893899
+  }
+}

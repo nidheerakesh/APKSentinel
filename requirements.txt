@@ -8,6 +8,7 @@ requests>=2.31
 python-dotenv>=1.0
 tqdm>=4.65
 seaborn>=0.12
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch>=2.0
 torch-geometric>=2.4
 networkx>=2.8
