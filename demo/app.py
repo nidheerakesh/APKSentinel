@@ -383,8 +383,11 @@ def load_ensemble():
     model_dir = _resolve_model_dir()
     gbm_path = model_dir / "ensemble_gbm.pkl"
     if gbm_path.exists():
-        with open(gbm_path, "rb") as f:
-            return pickle.load(f)
+        try:
+            with open(gbm_path, "rb") as f:
+                return pickle.load(f)
+        except Exception:
+            return None
     return None
 
 
