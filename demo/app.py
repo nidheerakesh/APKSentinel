@@ -1056,15 +1056,22 @@ def main():
 
     result = data = explanation = attributions = None
 
-    if uploaded_file is not None:
-        with tempfile.NamedTemporaryFile(suffix=".apk", delete=False) as tmp:
-            tmp.write(uploaded_file.getbuffer())
-            apk_path = tmp.name
+    if st.button("Detonate Sample", type="primary", use_container_width=True):
+        st.session_state["run_sha"] = pre_analyzed
+        st.session_state["run_upload"] = uploaded_file
 
+    run_sha = st.session_state.get("run_sha")
+    run_upload = st.session_state.get("run_upload")
+
+    if run_upload is not None:
+        with tempfile.NamedTemporaryFile(suffix=".apk", delete=False) as tmp:
+            tmp.write(run_upload.getbuffer())
+            apk_path = tmp.name
         with st.spinner("Detonating APK across 4 analysis agents..."):
             result, data, explanation, attributions = run_analysis(apk_path)
-    elif pre_analyzed:
-        result, data, explanation, attributions = load_preanalyzed(pre_analyzed)
+    elif run_sha:
+        with st.spinner("Running GNNExplainer on behaviour graph..."):
+            result, data, explanation, attributions = load_preanalyzed(run_sha)
 
     if result and explanation:
         sha_display = pre_analyzed or result.sha256
