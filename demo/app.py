@@ -551,11 +551,11 @@ def run_analysis(apk_path: str) -> tuple[AnalysisResult, object, ExplanationResu
 
 
 @st.cache_data(show_spinner="Running GNNExplainer...")
-def load_preanalyzed(_sha):
+def load_preanalyzed(sha):
     ev_dir = _resolve_evidence_dir()
     gr_dir = _resolve_graphs_dir()
-    evidence_path = ev_dir / f"{_sha}.json"
-    graph_path = gr_dir / f"{_sha}.pt"
+    evidence_path = ev_dir / f"{sha}.json"
+    graph_path = gr_dir / f"{sha}.pt"
 
     result = AnalysisResult.load(evidence_path)
     builder = GraphBuilder()
