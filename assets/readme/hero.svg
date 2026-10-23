@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">APKSentinel</title>
+  <desc id="hero-desc">APKSentinel name and summary beside an evidence graph. Six node types (method, class, permission, API call, network endpoint, crypto operation) connect to a central GAT node, which feeds a BENIGN, SUSPICIOUS or MALICIOUS verdict.</desc>
+
+  <rect width="1200" height="380" rx="26" fill="#0E1117"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <g id="title-block">
+      <text x="64" y="86" font-size="20" font-weight="700" letter-spacing="3" fill="#06B6D4">ANDROID MALWARE ANALYSIS</text>
+      <text x="62" y="172" font-size="96" font-weight="800" fill="#FAFAFA">APKSentinel</text>
+      <text x="64" y="224" font-size="26" fill="#B8BEC8">Multi-agent static analysis and graph attention</text>
+      <text x="64" y="256" font-size="26" fill="#B8BEC8">classification for Android banking malware.</text>
+
+      <g id="metric-chips" font-size="22" font-weight="600" text-anchor="middle">
+        <rect x="64" y="284" width="170" height="44" rx="22" fill="#151923" stroke="#06B6D4" stroke-width="2"/>
+        <text x="149" y="314" fill="#FAFAFA">F1 0.958</text>
+        <rect x="250" y="284" width="170" height="44" rx="22" fill="#151923" stroke="#10B981" stroke-width="2"/>
+        <text x="335" y="314" fill="#FAFAFA">Recall 0.983</text>
+        <rect x="436" y="284" width="170" height="44" rx="22" fill="#151923" stroke="#8B5CF6" stroke-width="2"/>
+        <text x="521" y="314" fill="#FAFAFA">AUC 0.950</text>
+      </g>
+      <text x="64" y="358" font-size="18" fill="#9AA3B2">Ensemble on a held-out test split of 84 APKs.</text>
+    </g>
+
+    <g id="evidence-graph" transform="translate(0 0)">
+      <rect x="800" y="28" width="336" height="324" rx="18" fill="#151923" stroke="#262A36" stroke-width="2"/>
+
+      <g stroke="#3A4152" stroke-width="2" fill="none">
+        <line x1="968" y1="190" x2="968" y2="86"/>
+        <line x1="968" y1="190" x2="878" y2="134"/>
+        <line x1="968" y1="190" x2="1058" y2="134"/>
+        <line x1="968" y1="190" x2="878" y2="246"/>
+        <line x1="968" y1="190" x2="1058" y2="246"/>
+        <line x1="968" y1="190" x2="968" y2="294"/>
+        <path d="M878 134 L968 86 L1058 134" stroke-dasharray="4 6"/>
+        <path d="M878 246 L968 294 L1058 246" stroke-dasharray="4 6"/>
+      </g>
+
+      <circle cx="968" cy="86" r="14" fill="#FF4B4B"/>
+      <circle cx="878" cy="134" r="14" fill="#06B6D4"/>
+      <circle cx="1058" cy="134" r="14" fill="#8B5CF6"/>
+      <circle cx="878" cy="246" r="14" fill="#F59E0B"/>
+      <circle cx="1058" cy="246" r="14" fill="#10B981"/>
+      <circle cx="968" cy="294" r="14" fill="#F472B6"/>
+      <circle cx="968" cy="190" r="28" fill="#06B6D4"/>
+
+      <g font-size="18" font-weight="700" text-anchor="middle" fill="#B8BEC8">
+        <text x="968" y="58">NETWORK_ENDPOINT</text>
+        <text x="878" y="110">METHOD</text>
+        <text x="1058" y="110">CLASS</text>
+        <text x="878" y="282">PERMISSION</text>
+        <text x="1058" y="282">API_CALL</text>
+        <text x="968" y="334">CRYPTO_OP</text>
+      </g>
+      <text x="968" y="196" font-size="18" font-weight="800" text-anchor="middle" fill="#0E1117">GAT</text>
+    </g>
+  </g>
+</svg>

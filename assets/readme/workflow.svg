@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="350" viewBox="0 0 1200 350" role="img" aria-labelledby="flow-title flow-desc">
+  <title id="flow-title">APKSentinel analysis pipeline</title>
+  <desc id="flow-desc">An APK is decompiled and read by four static agents (manifest, bytecode, network, crypto). Their evidence becomes a graph, a GAT and gradient boosting ensemble score it, and the verdict is BENIGN, SUSPICIOUS or MALICIOUS with a GNNExplainer subgraph.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5B6375"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="350" rx="26" fill="#0E1117"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <g fill="#151923" stroke="#262A36" stroke-width="2">
+      <rect x="30" y="40" width="200" height="250" rx="18"/>
+      <rect x="265" y="40" width="200" height="250" rx="18"/>
+      <rect x="500" y="40" width="200" height="250" rx="18"/>
+      <rect x="735" y="40" width="200" height="250" rx="18"/>
+      <rect x="970" y="40" width="200" height="250" rx="18"/>
+    </g>
+
+    <g stroke="#5B6375" stroke-width="2" fill="none" marker-end="url(#arrow)">
+      <line x1="234" y1="165" x2="260" y2="165"/>
+      <line x1="469" y1="165" x2="495" y2="165"/>
+      <line x1="704" y1="165" x2="730" y2="165"/>
+      <line x1="939" y1="165" x2="965" y2="165"/>
+    </g>
+
+    <g id="input" font-size="18" font-weight="700" letter-spacing="2" fill="#06B6D4">
+      <text x="50" y="76">INPUT</text>
+    </g>
+    <g font-size="24" font-weight="700" fill="#FAFAFA">
+      <text x="50" y="132">Android APK</text>
+    </g>
+    <g font-size="20" fill="#B8BEC8">
+      <text x="50" y="168">decompiled with</text>
+      <text x="50" y="196">androguard</text>
+    </g>
+
+    <g id="agents" font-size="18" font-weight="700" letter-spacing="2" fill="#8B5CF6">
+      <text x="285" y="76">AGENTS</text>
+    </g>
+    <g font-size="20" font-weight="600" text-anchor="middle" fill="#FAFAFA">
+      <rect x="285" y="96" width="160" height="36" rx="18" fill="#1E2330"/>
+      <text x="365" y="121">manifest</text>
+      <rect x="285" y="142" width="160" height="36" rx="18" fill="#1E2330"/>
+      <text x="365" y="167">bytecode</text>
+      <rect x="285" y="188" width="160" height="36" rx="18" fill="#1E2330"/>
+      <text x="365" y="213">network</text>
+      <rect x="285" y="234" width="160" height="36" rx="18" fill="#1E2330"/>
+      <text x="365" y="259">crypto</text>
+    </g>
+
+    <g id="graph" font-size="18" font-weight="700" letter-spacing="2" fill="#10B981">
+      <text x="520" y="76">GRAPH</text>
+    </g>
+    <g font-size="24" font-weight="700" fill="#FAFAFA">
+      <text x="520" y="132">Evidence</text>
+    </g>
+    <g font-size="20" fill="#B8BEC8">
+      <text x="520" y="168">6 node types</text>
+      <text x="520" y="196">6 edge types</text>
+      <text x="520" y="224">per APK</text>
+    </g>
+
+    <g id="model" font-size="18" font-weight="700" letter-spacing="2" fill="#F59E0B">
+      <text x="755" y="76">GAT + GBM</text>
+    </g>
+    <g font-size="20" fill="#B8BEC8">
+      <text x="755" y="132">GAT embeds the</text>
+      <text x="755" y="160">graph; GBM uses</text>
+      <text x="755" y="188">its probability</text>
+    </g>
+
+    <g id="verdict" font-size="18" font-weight="700" letter-spacing="2" fill="#FF4B4B">
+      <text x="990" y="76">VERDICT</text>
+    </g>
+    <g font-size="20" font-weight="700" text-anchor="middle">
+      <rect x="990" y="96" width="160" height="40" rx="20" fill="#10B981" fill-opacity="0.18" stroke="#10B981" stroke-width="2"/>
+      <text x="1070" y="123" fill="#10B981">BENIGN</text>
+      <rect x="990" y="148" width="160" height="40" rx="20" fill="#F59E0B" fill-opacity="0.18" stroke="#F59E0B" stroke-width="2"/>
+      <text x="1070" y="175" fill="#F59E0B">SUSPICIOUS</text>
+      <rect x="990" y="200" width="160" height="40" rx="20" fill="#FF4B4B" fill-opacity="0.18" stroke="#FF4B4B" stroke-width="2"/>
+      <text x="1070" y="227" fill="#FF4B4B">MALICIOUS</text>
+    </g>
+    <text x="1070" y="268" font-size="20" text-anchor="middle" fill="#B8BEC8">+ GNNExplainer</text>
+
+    <text x="600" y="324" font-size="20" text-anchor="middle" fill="#9AA3B2">All four agents read the APK statically. Nothing is executed.</text>
+  </g>
+</svg>
