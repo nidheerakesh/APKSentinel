@@ -146,7 +146,7 @@ def test_graph_construction():
     mal_evidence = make_malware_evidence()
     mal_graph = builder.build(mal_evidence, label=1)
     print(f"Malware graph: {mal_graph.num_nodes} nodes, {mal_graph.edge_index.size(1)} edges")
-    assert mal_graph.x.shape[1] == 17, f"Expected 17 features, got {mal_graph.x.shape[1]}"
+    assert mal_graph.x.shape[1] == 25, f"Expected 25 features, got {mal_graph.x.shape[1]}"
     assert mal_graph.y.item() == 1
     assert mal_graph.num_nodes > 5
 
